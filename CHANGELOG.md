@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v0.4.0] - 2025-12-26
+
+**Documentation & Build System Overhaul**
+
+### Added
+- **Docs**: Added Simplified Chinese documentation (`docs/README_ZH_CN.md`).
+- **Docs**: Added light/dark mode banners for better project presentation.
+- **Build**: Added `cmake/ArcFunctions.cmake` to support custom CMake utility functions.
+- **Build**: Implemented `arc_extract_version_from_changelog` to strictly synchronize project version with CHANGELOG.md (Single Source of Truth).
+- **Presets**: Added dedicated dependency mixins (`mixin-deps-sherpa-linux-aarch64` and `mixin-deps-sherpa-linux-x86_64`) for cross-platform consistency.
+
+### Changed
+- **Docs**: Refactored `README.md` structure and clarified "Convention over Configuration" philosophy.
+- **Build**: Standardized Sherpa-Onnx dependency URLs and updated hash verification for both x86_64 and aarch64 (RV1126BP).
+- **Test**: Fixed compilation issues in the test suite for x86_64 targets.
+- **License**: Improved license comment blocks in test subdirectories.
+
 ## [v0.3.0] - 2025-12-25
 
 **Initial Public Release & Framework Consolidation**
@@ -64,3 +81,6 @@ This release represents the consolidation of the entire ArcForge development his
 
 
 [0.3.0]: https://github.com/potterwhite/ArcForge/tags/v0.3.0
+
+[0.4.0]: https://github.com/potterwhite/ArcForge/tags/v0.4.0
+

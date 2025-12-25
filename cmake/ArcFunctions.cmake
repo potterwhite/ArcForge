@@ -1,3 +1,23 @@
+# Copyright (c) 2025 PotterWhite
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 # ==============================================================================
 # ArcForge Helper Functions
 # ==============================================================================
@@ -443,4 +463,176 @@ function(arc_install_library target_name include_dir)
 
     message(STATUS "[Configuration] Configured install rules for lib: ${target_name}")
 
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Function: arc_add_test
+# Description:
+#   A standardized function to register a GoogleTest unit test for a specific module.
+#   It automates the following boilerplate tasks:
+#     1. Creates an executable named "test_<TargetName>".
+#     2. Links the GoogleTest main entry point (GTest::gtest_main).
+#     3. Links the target library (e.g., ArcForge::Network).
+#     4. Injects the library's internal 'src' directory into the include path
+#        (Enabling white-box testing of private headers).
+#     5. Registers the test binary with CTest via gtest_discover_tests().
+#
+# Arguments:
+#   target_name : The name of the library being tested (e.g., "Network").
+#                 NOTE: Do not add the namespace prefix here; the function adds
+#                 "${PROJECT_NAMESPACE}::" automatically.
+#   ARGN        : The list of source files for the test (e.g., "test_network.cpp").
+# ------------------------------------------------------------------------------
+function(arc_add_test target_name)
+    # 0. Parsing Arguments
+    # The first argument is target_name; the rest are source files.
+    set(test_sources ${ARGN})
+
+    # 1. Define Test Executable Name
+    # Convention: test_<LibraryName> (e.g., test_Network)
+    set(test_exe_name "test_${target_name}")
+
+    message(STATUS "[Testing] Configuring test target: ${test_exe_name} for module: ${target_name}")
+
+    # 2. Create Executable
+    add_executable(${test_exe_name} ${test_sources})
+
+    # 3. Link GoogleTest
+    # GTest::gtest_main includes the standard main() function.
+    # GTest::gtest      includes the testing framework.
+    target_link_libraries(${test_exe_name}
+        PRIVATE
+            GTest::gtest
+            GTest::gtest_main
+    )
+
+    # 4. Link the Target Module
+    # We assume the library is aliased as ${PROJECT_NAMESPACE}::<TargetName>
+    # (e.g., ArcForge::Network).
+    # We check if the target exists to provide a friendly error message.
+    set(aliased_target "${PROJECT_NAMESPACE}::${target_name}")
+
+    if(TARGET ${aliased_target})
+        target_link_libraries(${test_exe_name}
+            PRIVATE
+                ${aliased_target}
+        )
+    else()
+        message(FATAL_ERROR "[Testing] Error: Cannot link test '${test_exe_name}' against unknown target '${aliased_target}'. Ensure the library is defined before adding tests.")
+    endif()
+
+    # 5. Enable White-box Testing (Internal Includes)
+    # Unit tests often need access to private headers located in 'src/'.
+    # We retrieve the SOURCE_DIR of the original library target and append '/src'.
+    # Note: We must resolve the ALIAS to the actual target name first (e.g., ArcForge::Network -> Network).
+    get_target_property(actual_target_name ${aliased_target} ALIASED_TARGET)
+
+    if(NOT actual_target_name)
+        # If it's not an alias, use the name directly
+        set(actual_target_name ${aliased_target})
+    endif()
+
+    get_target_property(target_source_dir ${actual_target_name} SOURCE_DIR)
+
+    if(EXISTS "${target_source_dir}/src")
+        target_include_directories(${test_exe_name}
+            PRIVATE
+                "${target_source_dir}/src"
+        )
+    endif()
+
+    # 6. Register with CTest
+    # This parses the compiled binary to list all tests for CTest.
+    gtest_discover_tests(${test_exe_name}
+        # Optional: Add XML output for CI/CD parsers (like Jenkins/GitLab)
+        XML_OUTPUT_DIR "${CMAKE_BINARY_DIR}/test_results"
+    )
+
+    # ---------------------------------
+    # IV. (Optional) Fix "PROJECT_NAME macro is missing"
+    # ---------------------------------
+    # In test cpp code, if desire to use #ifdef PROJECT_NAME to check
+    # whether the macro is defined during compilation of the test program.
+    # This is actually checking if the macro is defined when building the test.
+    # The arc_add_test function may not add this macro by default.
+    # If you really want that test to pass, you can manually add it here:
+    target_compile_definitions(${test_exe_name}
+        PRIVATE
+            PROJECT_NAME="${PROJECT_NAME}"
+    )
+
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Function: arc_extract_version_from_changelog
+# Description:
+#   Reads CHANGELOG.md, extracts the latest version (format ## [vX.Y.Z]),
+#   and sets the output variable in the PARENT_SCOPE.
+# Usage:
+#   arc_extract_version_from_changelog(MY_VERSION_VAR)
+# ------------------------------------------------------------------------------
+function(arc_extract_version_from_changelog output_version_var)
+    set(changelog_path "${CMAKE_SOURCE_DIR}/CHANGELOG.md")
+    set(default_version "0.0.0")
+
+    if(EXISTS "${changelog_path}")
+        # Read first 4KB to save time
+        file(READ "${changelog_path}" changelog_content LIMIT 4096)
+
+        # Regex to match: ## [v1.2.3] or ## [1.2.3]
+        # Group 1 will be the version number
+        string(REGEX MATCH "## \\[v?([0-9]+\\.[0-9]+\\.[0-9]+)\\]" _match_result "${changelog_content}")
+
+        if(CMAKE_MATCH_1)
+            set(detected_version "${CMAKE_MATCH_1}")
+            message(STATUS "[Version] Extracted from CHANGELOG.md: ${detected_version}")
+        else()
+            message(WARNING "[Version] Pattern '## [vX.Y.Z]' not found in CHANGELOG.md. Using default.")
+            set(detected_version "${default_version}")
+        endif()
+    else()
+        message(WARNING "[Version] CHANGELOG.md not found at ${changelog_path}. Using default.")
+        set(detected_version "${default_version}")
+    endif()
+
+    # Return the value to the caller
+    set(${output_version_var} "${detected_version}" PARENT_SCOPE)
+endfunction()
+
+
+# ------------------------------------------------------------------------------
+# Function: arc_generate_system_info_header
+# Description:
+#   Generates a C++ header file with version and build timestamp info.
+#   It creates an interface library 'project_version_info' for easy linking.
+# Usage:
+#   arc_generate_system_info_header()
+# ------------------------------------------------------------------------------
+function(arc_generate_system_info_header)
+    # Get Timestamp
+    string(TIMESTAMP BUILD_TIMESTAMP "%Y-%m-%d %H:%M:%S")
+
+    # Define paths
+    set(TEMPLATE_FILE "${CMAKE_SOURCE_DIR}/cmake/templates/system-info.h.in")
+    set(GENERATED_DIR "${CMAKE_BINARY_DIR}/generated/include")
+    set(OUTPUT_FILE   "${GENERATED_DIR}/ArcForge/system-info-gen.h")
+
+    if(NOT EXISTS "${TEMPLATE_FILE}")
+        message(FATAL_ERROR "[Version] Template file not found: ${TEMPLATE_FILE}")
+    endif()
+
+    # Configure file (Replace @VARS@)
+    configure_file(
+        "${TEMPLATE_FILE}"
+        "${OUTPUT_FILE}"
+        @ONLY
+    )
+
+    # Create an Interface Library
+    # This allows other libs to just target_link_libraries(target PUBLIC project_version_info)
+    if(NOT TARGET project_version_info)
+        add_library(project_version_info INTERFACE)
+        target_include_directories(project_version_info INTERFACE "${GENERATED_DIR}")
+        message(STATUS "[Version] Generated system info header at: ${OUTPUT_FILE}")
+    endif()
 endfunction()

@@ -34,7 +34,7 @@ message(STATUS "[Configuration][ThirdParty] Preparing Sherpa-Onnx...")
 # ---------------------------------
 # These variables come from CMakePresets.json
 if(NOT DEFINED SHERPA_ONNX_URL OR NOT DEFINED SHERPA_ONNX_HASH)
-    message(FATAL_ERROR "[Configuration][ThirdParty] SHERPA_ONNX_URL or HASH not defined. Check CMakePresets.json.")
+    message(Warning "[Configuration][ThirdParty] SHERPA_ONNX_URL or HASH not defined. Check CMakePresets.json.")
 endif()
 
 set(CHOSEN_SHERPA_URL "${SHERPA_ONNX_URL}")

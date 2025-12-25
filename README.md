@@ -1,90 +1,128 @@
+<div align="center">
+  <h1>ArcForge ASR SDK</h1>
+  <p><i>High-Performance C++ Automatic Speech Recognition Inference Software</i></p>
+</div>
 
-所有的libs都是以Namespace::Lib的格式命名，例如Arcforge::Utils
-但输出的时候，我加长了最终文件的名称长度，例如：libarcforge_utils.so
+<p align="center">
+  <!-- Place your generated Banner image here -->
+  <img src="https://github.com/potterwhite/ArcForge/blob/8afe0dc3f26d82b3643dba5d9dc1fd3070b95b2d/docs/asset/banner-light.jpeg" alt="Project Banner" width="100%"/>
+</p>
 
-如果出现找不到gcc（或类似）的情况，请直接去看.env，配置是由./build.sh加载.env，然后
+<p align="center">
+  <a href="#"><img src="https://img.shields.io/badge/standard-C++17-blue" alt="C++ Standard"></a>
+  <a href="#"><img src="https://img.shields.io/badge/platform-Linux%20%7C%20Embedded-orange" alt="Platform"></a>
+  <a href="#"><img src="https://img.shields.io/badge/design-Convention%20over%20Configuration-success" alt="Design Philosophy"></a>
+  <a href="#"><img src="https://img.shields.io/badge/build-Automated%20CMake-blueviolet" alt="Build System"></a>
+</p>
 
+<p align="center">
+  <strong>English</strong> | <a href="./docs/README_ZH_CN.md">简体中文</a>
+</p>
+
+<p align="center">
+  <a href="#-quick-start">🚀 Quick Start</a> •
+  <a href="#-command-cheatsheet">⌨️ Command Cheatsheet</a> •
+  <a href="#-output-structure">📂 Output Structure</a>
+</p>
 
 ---
 
-## 快速上手 (Quick Start)
+> ### ⚠️ Cross-Compilation Notice
+> **Env Configuration is Critical.** This project relies heavily on the `.env` file to locate the cross-compilation toolchain. If you encounter `gcc not found` or similar errors, please check if your `.env` configuration is loaded correctly.
 
-本项目采用 Modern CMake 管理构建，并通过 `.env` 文件隔离本地环境差异。
+### ✨ Core Features
 
-### 1. 环境配置 (Configuration)
+-   **⚡ High-Performance Inference**: Currently uses the `sherpa-zipformer` model for ASR inference (tested and verified); designed as an integrated ASR inference engine for edge computing.
+-   **🛠️ Modern CMake Architecture**: Adopts namespace isolation (`Namespace::Lib`, e.g., `Arcforge::Utils`). Automatically renames artifacts during the build process (e.g., `libarcforge_utils.so`) to ensure symbol safety.
+-   **📦 Dependency Isolation**: Decouples the local environment from the source code via `.env`. Supports offline caching and automatic downloading of third-party dependencies (e.g., sherpa-onnx).
+-   **🔌 Client/Server Ready**: Built-in complete C/S architecture examples. The Server includes NPU binding logic, while the Client provides standard calling interfaces.
 
-在开始编译前，必须建立本地配置文件。该文件已被 git 忽略，用于适配不同开发者的本地路径。
+---
+
+### 🚀 Quick Start
+
+This project uses Modern CMake for build management and isolates local environment differences via the `.env` file.
+
+#### Step 1: Configuration
+
+Before compiling, you must create a local configuration file. This file is git-ignored and used to adapt to different developers' local paths.
 
 ```bash
-# 1. 从模板复制配置文件
+# 1. Copy config file from template
 cp .env.example .env
 
-# 2. 编辑 .env 文件，填入本地 SDK 和缓存路径
+# 2. Edit .env file, fill in local SDK and cache paths
 vim .env
 ```
 
-**关键配置项说明：**
+**Key Configuration Items:**
 
-*   `ARC_RV1126BP_SDK_ROOT`: **(必填)** 交叉编译工具链（Buildroot SDK）在宿主机上的绝对路径。
-*   `ARC_DEP_CACHE_DIR`: **(可选)** 第三方依赖包（如 `sherpa-onnx`）的本地缓存目录。
-    *   若配置该路径且目录下存在对应 tarball，构建系统将优先使用本地文件（离线模式）。
-    *   若未配置或文件不存在，将自动从 GitHub Release 下载。
+*   `ARC_RV1126BP_SDK_ROOT`: **(Required)** The absolute path to the cross-compilation toolchain (Buildroot SDK) on the host machine.
+*   `ARC_DEP_CACHE_DIR`: **(Optional)** Local cache directory for third-party dependencies (e.g., `sherpa-onnx`).
+    *   If this path is configured and the corresponding tarball exists, the build system will prefer the local file (offline mode).
+    *   If not configured or the file is missing, it will automatically download from GitHub Releases.
 
-### 2. 编译构建 (Build)
+#### Step 2: Build
 
-项目提供统一构建脚本 `build.sh`，封装了 CMake Presets 逻辑。
+The project provides a unified build script `build.sh`, which encapsulates the CMake Presets logic.
 
-**基础语法：**
+**Basic Syntax:**
 ```bash
 ./build.sh <Action> [Platform] [BuildType]
 ```
 
-**常用命令示例：**
+**Common Workflow Examples:**
 
-*   **全量构建与安装 (Clean, Build & Install)**
-    适用于首次构建或环境变更后。
+1.  **Clean Build**: Suitable for first-time builds or after environment changes.
     ```bash
-    # 编译 RV1126BP 版本 (Release)
     ./build.sh cb rv1126bp
-
-    # 编译 RV1126BP 版本 (Debug)
-    ./build.sh cb rv1126bp debug
     ```
-
-*   **增量编译 (Incremental Build)**
-    适用于开发过程中的修改调试。
+2.  **Incremental Build**: For debugging after code modifications.
     ```bash
     ./build.sh build rv1126bp
     ```
-
-*   **本机编译 (Native Host)**
-    用于在 x86/Linux 主机上调试业务逻辑。
+3.  **Native Test**: Verify business logic on an x86 host.
     ```bash
     ./build.sh cb native
     ```
 
-*   **清理构建 (Clean)**
-    ```bash
-    ./build.sh cleanall
-    ```
+---
 
-### 3. 产物说明 (Output)
+### ⌨️ Command Cheatsheet
 
-构建完成后，所有产物将安装至 `install/` 目录下：
+| Action | Command | Description |
+| :--- | :--- | :--- |
+| **Release Build** | | |
+| Clean Build (RV1126) | `./build.sh cb rv1126bp` | Clean and compile Release version, includes SDK linking |
+| Incremental Build | `./build.sh build rv1126bp` | Compile only modified files; fastest speed |
+| **Debug Build** | | |
+| Debug Mode (RV1126) | `./build.sh cb rv1126bp debug` | Enable debug symbols, unoptimized version |
+| Native Debug (x86) | `./build.sh cb native debug` | Compile using host GCC/Clang, used for logic verification |
+| **Maintenance** | | |
+| Clean All | `./build.sh cleanall` | Delete all build directories and install artifacts |
+
+---
+
+### 📂 Output Structure
+
+Upon build completion, all artifacts will be installed to the `install/` directory, following the renaming rules (`libarcforge_*.so`):
 
 ```text
 install/
 └── rv1126bp/
     └── debug/
         ├── bin/
-        │   ├── ArcForge_ASR_Client   # 客户端应用
-        │   └── ArcForge_ASR_Server   # 服务端应用 (含 NPU 绑定)
+        │   ├── ArcForge_ASR_Client   # Client Application
+        │   └── ArcForge_ASR_Server   # Server Application (with NPU binding)
         ├── lib/
-        │   ├── libArcForge_*.so      # 核心业务库
-        │   └── libsherpa-onnx*.so    # 第三方依赖库
-        └── include/                  # SDK 头文件
+        │   ├── libarcforge_core.so   # Core Business Lib (was Arcforge::Core)
+        │   ├── libarcforge_utils.so  # Utils Lib (was Arcforge::Utils)
+        │   └── libsherpa-onnx*.so    # 3rd-party Dependency Lib
+        └── include/                  # SDK Headers
 ```
 
----
+### ⚠️ Limitations & Roadmap
 
-
+-   **Network & Caching**:
+    -   The build system defaults to attempting to pull third-party dependencies (e.g., `sherpa-onnx`) from GitHub.
+    -   Given potential network instability, it is **recommended** to configure `ARC_DEP_CACHE_DIR` in `.env` and pre-populate it with dependency packages to ensure build stability ("Offline-First" mode). Please refer to `CMakePresets.json` for exact package URLs.

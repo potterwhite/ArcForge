@@ -7,12 +7,21 @@
   },
   "configurePresets": [
     {
-      "name": "mixin-deps-rv1126bp",
+      "name": "mixin-deps-sherpa-linux-aarch64",
       "hidden": true,
-      "description": "External dependencies URLs and Hashes for RV1126BP",
+      "description": "External dependencies URLs and Hashes for RV1126BP by DIY",
       "cacheVariables": {
-        "SHERPA_ONNX_URL": "https://github.com/potterwhite/Artifacts_Public/releases/download/SherpaOnnx-v1.12.20-RV1126BP/sherpa-onnx-v1.12.20-rv1126bp.tar.xz",
-        "SHERPA_ONNX_HASH": "SHA256=173c845060985761f21a6922446fc878904e2f5d751a721a5a4d61ebc39c2342"
+        "SHERPA_ONNX_URL": "https://github.com/potterwhite/Artifacts_Public/releases/download/sherpa-onnx-v1.12.20-linux-aarch64-shared-arcforge/sherpa-onnx-v1.12.20-linux-aarch64-shared-arcforge.tar.xz",
+        "SHERPA_ONNX_HASH": "SHA256=09a83547a86c88e8b918172f597ac8ffd83283290905804f23bb6039fa05de6d"
+      }
+    },
+    {
+      "name": "mixin-deps-sherpa-linux-x86_64",
+      "hidden": true,
+      "description": "External dependencies URLs and Hashes for x86_64 From Official Github",
+      "cacheVariables": {
+        "SHERPA_ONNX_URL": "https://github.com/potterwhite/Artifacts_Public/releases/download/sherpa-onnx-v1.12.20-linux-x86_64-shared-arcforge/sherpa-onnx-v1.12.20-linux-x86_64-shared-arcforge.tar.xz",
+        "SHERPA_ONNX_HASH": "SHA256=ec2186e2d746698bef674a9e30d5cc1019447b7f1d6807dbe0c60d19c09fb642"
       }
     },
     {
@@ -71,7 +80,7 @@
     },
     {
       "name": "native-release",
-      "inherits": ["base", "plat-native", "cfg-release", "cfg-shared"],
+      "inherits": ["base", "plat-native", "cfg-release", "cfg-shared", "mixin-deps-sherpa-linux-x86_64"],
       "installDir": "${sourceDir}/install/native/release",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/native/release"
@@ -79,7 +88,7 @@
     },
     {
       "name": "native-debug",
-      "inherits": ["base", "plat-native", "cfg-debug", "cfg-shared"],
+      "inherits": ["base", "plat-native", "cfg-debug", "cfg-shared", "mixin-deps-sherpa-linux-x86_64"],
       "installDir": "${sourceDir}/install/native/debug",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/native/debug"
@@ -87,7 +96,7 @@
     },
     {
       "name": "native-release-static",
-      "inherits": ["base", "plat-native", "cfg-release", "cfg-static"],
+      "inherits": ["base", "plat-native", "cfg-release", "cfg-static", "mixin-deps-sherpa-linux-x86_64"],
       "installDir": "${sourceDir}/install/native/release-static",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/native/release-static"
@@ -95,7 +104,7 @@
     },
     {
       "name": "native-debug-static",
-      "inherits": ["base", "plat-native", "cfg-debug", "cfg-static"],
+      "inherits": ["base", "plat-native", "cfg-debug", "cfg-static", "mixin-deps-sherpa-linux-x86_64"],
       "installDir": "${sourceDir}/install/native/debug-static",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/native/debug-static"
@@ -103,7 +112,7 @@
     },
     {
       "name": "rv1126bp-release",
-      "inherits": ["base", "plat-rv1126bp", "cfg-release", "cfg-shared", "mixin-deps-rv1126bp"],
+      "inherits": ["base", "plat-rv1126bp", "cfg-release", "cfg-shared", "mixin-deps-sherpa-linux-aarch64"],
       "installDir": "${sourceDir}/install/rv1126bp/release",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/rv1126bp/release"
@@ -111,7 +120,7 @@
     },
     {
       "name": "rv1126bp-debug",
-      "inherits": ["base", "plat-rv1126bp", "cfg-debug", "cfg-shared", "mixin-deps-rv1126bp"],
+      "inherits": ["base", "plat-rv1126bp", "cfg-debug", "cfg-shared", "mixin-deps-sherpa-linux-aarch64"],
       "installDir": "${sourceDir}/install/rv1126bp/debug",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/rv1126bp/debug"
@@ -119,7 +128,7 @@
     },
     {
       "name": "rv1126bp-release-static",
-      "inherits": ["base", "plat-rv1126bp", "cfg-release", "cfg-static", "mixin-deps-rv1126bp"],
+      "inherits": ["base", "plat-rv1126bp", "cfg-release", "cfg-static", "mixin-deps-sherpa-linux-aarch64"],
       "installDir": "${sourceDir}/install/rv1126bp/release-static",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/rv1126bp/release-static"
@@ -127,7 +136,7 @@
     },
     {
       "name": "rv1126bp-debug-static",
-      "inherits": ["base", "plat-rv1126bp", "cfg-debug", "cfg-static", "mixin-deps-rv1126bp"],
+      "inherits": ["base", "plat-rv1126bp", "cfg-debug", "cfg-static", "mixin-deps-sherpa-linux-aarch64"],
       "installDir": "${sourceDir}/install/rv1126bp/debug-static",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/rv1126bp/debug-static"

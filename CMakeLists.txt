@@ -21,26 +21,32 @@
 cmake_minimum_required(VERSION 3.20)
 
 # ---------------------------------
-# I. Project Definitions
-# ---------------------------------
-set(PROJECT_NAMESPACE "ArcForge")
-project(${PROJECT_NAMESPACE}
-    VERSION
-        1.2.3
-    LANGUAGES
-        CXX
-)
-
-# ---------------------------------
-# II.
-#    Injecting project-local cmake dir to "CMake Module Search Path"-CMAKE_MODULE_PATH
+# I. Injecting project-local cmake dir to "CMake Module Search Path"-CMAKE_MODULE_PATH
 #    add ArcFunctions module
 # ---------------------------------
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(ArcFunctions)
 
 # ---------------------------------
-# III. Batch Mode Configure
+# II. Extract version from CHANGELOG.md
+#     result is stored in ARC_PROJECT_VERSION
+# ---------------------------------
+arc_extract_version_from_changelog(ARC_PROJECT_VERSION)
+
+# ---------------------------------
+# III. Project Definitions
+# ---------------------------------
+set(PROJECT_NAMESPACE "ArcForge")
+project(${PROJECT_NAMESPACE}
+    VERSION
+        ${ARC_PROJECT_VERSION}
+    LANGUAGES
+        CXX
+)
+
+
+# ---------------------------------
+# IV. Batch Mode Configure
 #      a. C++ Standard
 #      b. PIC
 #      c. Compile Policy
@@ -49,7 +55,7 @@ include(ArcFunctions)
 arc_init_global_settings()
 
 # ---------------------------------
-# IV. Bath Mode Configure
+# V. Bath Mode Configure
 #     a. Global Project Version
 #     b. Author (Name & Email)
 #     c. Build Timestamp
@@ -57,7 +63,7 @@ arc_init_global_settings()
 arc_init_project_metadata()
 
 # ---------------------------------
-# IX. Install Directory (Refactored)
+# VI. Install Directory (Refactored)
 # ---------------------------------
 # [CHANGE LOG]:
 # 1. Removed the logic that appended "/${BUILD_TYPE_LOWER}".
@@ -74,19 +80,27 @@ else()
 endif()
 
 # ---------------------------------
-# X. Main Executes
+# VII. Main Executes
 # ---------------------------------
-# 1. 先处理第三方库 (因为 libs 可能会依赖它)
-#    注意顺序：必须在 add_subdirectory(libs) 之前！
+# Process third-party libraries first (because libs may depend on them)
+# Note the order:
+#                This must be done **before** add_subdirectory(libs)!
+#
 add_subdirectory(third_party)
 
 add_subdirectory(libs)
 add_subdirectory(apps)
 
 # ---------------------------------
-# VII. [Optional] Test
+# VIII. [Optional] Test
 # ---------------------------------
 if(BUILD_TEST STREQUAL "TRUE")
+    # ---------------------------------
+    # Enable CTest
+    #     This allows the use of 'ctest' command to run all tests.
+    # ---------------------------------
+    enable_testing()
+
     add_subdirectory(test)
 endif()
 
