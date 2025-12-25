@@ -1,0 +1,14 @@
+
+# Personal envrironment variables config file should be ignored
+.env
+
+# Build directories should be ignored
+build/
+
+# installation directory should be ignored
+install/
+
+# IDE settings should be ignored
+.vscode
+
+# end of file
