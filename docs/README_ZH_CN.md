@@ -126,3 +126,28 @@ install/rv1126bp/release/
     ├── libarcforge_utils.so     # 基础工具库
     └── libsherpa-onnx*.so       # 依赖库
 ```
+
+### 支持新平台
+
+目前所支持的平台只有RV1126BP和RK3588S，要支持新平台，需要做 件事情：
+
+#### 1. 编译该平台的Sherpa-Onnx SDK
+
+这一点其实很重要，但是若你所要支持的新平台可以使用1126或3588的sherpa库，那么这个编译就可以不用做。
+
+#### 2. 新增mixin-deps对新平台的节点
+```bash
+    {
+      "name": "mixin-deps-sherpa-linux-aarch64-gcc11_3_0",
+      "hidden": true,
+      "description": "External dependencies URLs and Hashes for aarch64 gcc 11.3.0 From Potterwhite's Github",
+      "cacheVariables": {
+        "SHERPA_ONNX_URL": "https://github.com/potterwhite/Artifacts_Public/releases/download/prebuilt-sherpa-onnx-v1.12.20-arcforge/sherpa-onnx-v1.12.20-linux-aarch64-gcc11_3_0-shared-arcforge.tar.xz",
+        "SHERPA_ONNX_HASH": "SHA256=3658b4904df03d3d7a9b1aef8e1753654f62631cd9e141d0f2b07588667556b9"
+      }
+    },
+```
+
+
+
+
