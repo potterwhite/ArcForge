@@ -65,10 +65,10 @@ class VADImpl {
 
 	int GetSampleRate() const { return expected_sample_rate_; }
 
-	// 禁止拷贝和赋值
+
 	VADImpl(const VADImpl&) = delete;
 	VADImpl& operator=(const VADImpl&) = delete;
-	// 允许移动 (如果需要)
+	
 	VADImpl(VADImpl&&) noexcept;
 	VADImpl& operator=(VADImpl&&) noexcept;
 

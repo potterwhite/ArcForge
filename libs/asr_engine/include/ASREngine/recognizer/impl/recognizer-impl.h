@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-// 文件: recognizer/impl/recognizer-impl.h
+// libs/asr_engine/include/ASREngine/recognizer/impl/recognizer-impl.h
 #pragma once
 
 #include "ASREngine/pch.h"
@@ -28,12 +28,8 @@
 // #include <string>
 // #include <vector>
 
-// 向前声明你自己的配置类，因为 Impl 需要它
-#include "ASREngine/recognizer/recognizer-config.h"  // << 注意路径，相对于 impl 目录调整
-    // 或者更常见的做法是在 CMake 中配置 include 路径
-    // 使得可以直接 #include "recognizer-config.h"
+#include "ASREngine/recognizer/recognizer-config.h"
 
-// 向前声明 Sherpa-ONNX 的内部类型
 namespace sherpa_onnx {
 namespace cxx {
 class OnlineRecognizer;
@@ -48,20 +44,19 @@ namespace ai_asr {
 class RecognizerImpl {
    public:
 	RecognizerImpl();
-	~RecognizerImpl();  // 确保在 .cpp 中定义
+	~RecognizerImpl();
 
 	bool Initialize(const SherpaConfig& user_config);
 	void ProcessAudioChunk(const std::vector<float>& audio_chunk);
 	void InputFinished();
-	std::string GetCurrentText() ;
+	std::string GetCurrentText();
 	bool IsEndpoint() const;
 	void ResetStream();
 	int GetExpectedSampleRate() const;
 
-	// 禁止拷贝和赋值
 	RecognizerImpl(const RecognizerImpl&) = delete;
 	RecognizerImpl& operator=(const RecognizerImpl&) = delete;
-	// 允许移动 (如果需要)
+
 	RecognizerImpl(RecognizerImpl&&) noexcept;
 	RecognizerImpl& operator=(RecognizerImpl&&) noexcept;
 
@@ -71,9 +66,8 @@ class RecognizerImpl {
 	std::unique_ptr<sherpa_onnx::cxx::OnlineRecognizer> recognizer_ptr_;
 	std::unique_ptr<sherpa_onnx::cxx::OnlineStream> stream_ptr_;
 
-	// 其他成员变量
 	std::string last_displayed_text_;
-	int expected_sample_rate_ = 16000;  // 默认值或从配置初始化
+	int expected_sample_rate_ = 16000;
 };
 
 }  // namespace ai_asr

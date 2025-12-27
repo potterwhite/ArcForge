@@ -23,16 +23,14 @@
 #pragma once
 
 #include "Network/common/common-types.h"
-#include "Network/pch.h"  // 你的干净PCH (只包含 common-types.h 和标准库)
-
-// #include "base-config.h"  // 你的干净配置
+#include "Network/pch.h"
 
 namespace arcforge {
 namespace embedded {
 namespace network_socket {
 
-// 向前声明 PIMPL 实现类
-class BaseImpl;  // <--- 关键
+// forward declaration of PIMPL implementation class
+class BaseImpl;
 
 static const std::string k_empty_socket_path_sentinel = "";
 
@@ -75,9 +73,8 @@ class Base {
 	virtual SocketReturnValue connectToServer();
 
 	// server-utilized-only functions
-	virtual SocketReturnValue startServer(
-	    const size_t& timeout = static_cast<size_t>(-1));  // 启动Unix域socket服务器
-	// std::unique_ptr<Base> acceptClient();                  // 接受客户端连接
+	virtual SocketReturnValue startServer(const size_t& timeout = static_cast<size_t>(-1));
+
 	virtual SocketAcceptReturn acceptClient();
 	virtual SocketReturnValue unlinkSocketPath();
 

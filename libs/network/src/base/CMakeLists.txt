@@ -34,19 +34,6 @@ set(BASE_PUBLIC_HEADERS
 	# "${INCLUDE_DIR}/Network/base/base-config.h"
 	"${INCLUDE_DIR}/Network/base/exception.h" )
 
-#[[
-# 上报给父级
-set(LIB_SOURCES
-	${LIB_SOURCES} ${BASE_SOURCES}
-	PARENT_SCOPE)
-
-set(LIB_PUBLIC_HEADERS
-	${LIB_PUBLIC_HEADERS} ${BASE_PUBLIC_HEADERS}
-	PARENT_SCOPE)
-
-install(FILES ${BASE_PUBLIC_HEADERS} DESTINATION include/${PROJECT_NAME}/base)
-]]
-
 target_sources(${PROJECT_NAME}
     PRIVATE
         ${COMMON_SOURCES}

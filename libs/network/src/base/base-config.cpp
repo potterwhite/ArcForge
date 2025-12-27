@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 #include "base-config.h"
-// #include "sherpa-onnx/c-api/cxx-api.h"  // 使用C++ API
+// #include "sherpa-onnx/c-api/cxx-api.h"
 
 namespace arcforge {
 namespace embedded {

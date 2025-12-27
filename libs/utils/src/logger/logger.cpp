@@ -21,7 +21,7 @@
 #include "Utils/logger/logger.h"
 #include <iostream>
 #include <sstream>
-#include "Utils/logger/worker/consolesink.h"  // 默认 Sink
+#include "Utils/logger/worker/consolesink.h"
 #include "Utils/logger/worker/log_entry.h"
 
 namespace arcforge {
@@ -34,7 +34,6 @@ Logger& Logger::GetInstance() {
 }
 
 Logger::Logger() : loggerlevel_(LoggerLevel::kdebug) {
-	// 默认添加一个控制台 Sink
 	AddSink(std::make_shared<ConsoleSink>());
 }
 
@@ -58,10 +57,10 @@ void Logger::ClearSinks() {
 }
 
 void Logger::dispatch(const LogEntry& entry) {
-	// 这里故意将锁的范围缩小，只保护 sinks_ 列表的拷贝
-	// 这样在执行 I/O 操作 (sink->log) 时不会长时间持有锁，提高性能
 	std::vector<std::shared_ptr<LogSink>> sinks_copy;
 	{
+		// shrink the lock scope, only protect sinks_ copying
+		// this way we don't hold the lock during I/O operations (sink->log), improving performance
 		std::lock_guard<std::mutex> lock(log_mutex_);
 		sinks_copy = sinks_;
 	}
@@ -74,10 +73,10 @@ void Logger::dispatch(const LogEntry& entry) {
 }
 
 /****************************************************************
-*                       核心日志方法
+                        Key Logging Method
 ****************************************************************/
 void Logger::Log(LoggerLevel level, const std::string& message, std::string_view tag) {
-	// 级别检查提前，避免不必要的对象创建和函数调用
+	// Level check early to avoid unnecessary object creation and function calls
 	if (loggerlevel_ > level) {
 		return;
 	}
@@ -92,7 +91,7 @@ void Logger::Log(LoggerLevel level, const std::string& message, std::string_view
 }
 
 /****************************************************************
-*                     批量/多行日志方法
+					Batch Log / MultiLineLog
 ****************************************************************/
 void Logger::BatchLog(LoggerLevel level, const std::vector<std::string>& messages,
                       std::string_view tag) {
@@ -117,7 +116,7 @@ void Logger::MultiLineLog(LoggerLevel level, const std::string& multiline_messag
 }
 
 /****************************************************************
-*                       便捷日志方法
+					Convienience Logging Methods
 ****************************************************************/
 void Logger::Info(const std::string& message, std::string_view tag) {
 	Log(LoggerLevel::kinfo, message, tag);

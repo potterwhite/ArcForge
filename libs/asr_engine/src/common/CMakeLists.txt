@@ -22,30 +22,10 @@
 # src/common/CMakeLists.txt
 #
 
-# 列出这个模块的源文件 (如果有 .cpp 文件)
 set(COMMON_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/common-types.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/system-info.cpp"
 )
-
-#[[
-# 列出这个模块提供的头文件 (供父级 CMakeLists.txt 用于安装或接口包含)
-set(COMMON_PUBLIC_HEADERS
-    "${INCLUDE_DIR}/ASR/common/common-types.h"
-)
-
-# 将源文件列表设置到父作用域，以便顶层 CMakeLists.txt 可以使用它
-set(LIB_SOURCES ${LIB_SOURCES} ${COMMON_SOURCES} PARENT_SCOPE) # 如果有 COMMON_SOURCES
-set(LIB_PUBLIC_HEADERS ${LIB_PUBLIC_HEADERS} ${COMMON_PUBLIC_HEADERS} PARENT_SCOPE)
-
-install(FILES ${COMMON_PUBLIC_HEADERS} DESTINATION include/${PROJECT_NAME}/common)
-
-# # 将 version.cpp 添加到源文件列表中
-# list(APPEND LIB_SOURCES
-
-#     # ... 您在 common 目录下的其他 .cpp 文件
-# )
-]]
 
 target_sources(${PROJECT_NAME}
     PRIVATE

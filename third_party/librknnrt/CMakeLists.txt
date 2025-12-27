@@ -62,8 +62,8 @@ FetchContent_Declare(
     URL      ${CHOSEN_LIBRKNNRT_URL}
     URL_HASH ${LIBRKNNRT_HASH}
     # ----------
-    # 下载并解压到 build/_deps/librknnrt_pkg-src
-    #  (默认就是自动解压)
+    # Download and Decompress unto the directory of "build/_deps/librknnrt_pkg-src"
+    # Default is FALSE
     # DOWNLOAD_NO_EXTRACT FALSE
     # ----------
 )

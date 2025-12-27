@@ -29,7 +29,7 @@
 #include <memory>     // For std::unique_ptr (though direct return is fine here)
 #include <sstream>    //std::ostringstream
 #include <stdexcept>  // For std::runtime_error
-#include <string>     // 确保 string/vector/memory 这些公共接口用到的被包含
+#include <string>     
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>  //read() close()

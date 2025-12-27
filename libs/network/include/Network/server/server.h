@@ -33,14 +33,6 @@ class ServerBase : public Base {
    public:
 	ServerBase();
 	~ServerBase();
-
-	// // 核心功能
-	// SocketReturnValue startServer(
-	//     const size_t& timeout = static_cast<size_t>(-1));  // 启动Unix域socket服务器
-	// // std::unique_ptr<Base> acceptClient();                  // 接受客户端连接
-	// SocketAcceptReturn acceptClient();
-	// SocketReturnValue unlinkSocketPath();
-
 };
 
 }  // namespace network_socket

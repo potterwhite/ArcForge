@@ -20,40 +20,33 @@
 
 #include "Utils/common/system-info.h"
 
-// 关键：包含由 CMake 在第 3 步生成的头文件
+// IMPORTANT: Import from CMakeLists.txt externally
 #include "system-info.h"
 
 namespace arcforge {
 namespace embedded {
 namespace utils {
 
-// 实现公共接口函数
+
 std::string get_utils_library_version() {
-	// 使用 CMake 生成的宏返回版本字符串
+	// These macros come from CMakeLists externally
 	return VERSION_STRING;
 }
 
 std::string get_utils_library_author() {
-	// 使用 CMake 生成的宏返回版本字符串
+	// These macros come from CMakeLists externally
 	return AUTHOR_NAME;
 }
 
 std::string get_utils_library_author_email() {
-	// 使用 CMake 生成的宏返回版本字符串
+	// These macros come from CMakeLists externally
 	return AUTHOR_EMAIL;
 }
 
 std::string get_utils_library_build_timestamp() {
-	// 使用 CMake 生成的宏返回版本字符串
+	// These macros come from CMakeLists externally
 	return BUILD_TIMESTAMP;
 }
-
-// // 定义一个全局常量，以确保版本字符串被编译进二进制文件，
-// // 这样 'strings' 命令就能找到它。
-// const char* g_internal_version_string_for_binary_scan = VERSION_STRING;
-// const char* g_internal_author_string_for_binary_scan = AUTHOR_NAME;
-// const char* g_internal_author_email_string_for_binary_scan = AUTHOR_EMAIL;
-// const char* g_internal_build_timestamp_string_for_binary_scan = BUILD_TIMESTAMP;
 
 }  // namespace utils
 }  // namespace embedded

@@ -22,10 +22,10 @@
 #include "Utils/logger/logger.h"
 #include "common-types.h"
 
-// --- 配置 ---
-// Sherpa-ONNX 模型路径 (根据你的实际路径修改)
-// 你使用的是rknn模型，需要确保provider正确设置为"rknn"
-// 我这里先用通用zipformer示例路径，请务必替换成你RK3588的rknn模型路径！
+// --- Config ---
+// sherpa-onnx model paths
+// **** pls modify these paths according to your actual model locations ****
+// **** also ensure the provider is set to "rknn" for RK3588 if you are using RKNN ****
 const std::string ENCODER_PATH =
     "/home/asr/models/sherpa-onnx-rk3588-streaming-zipformer-bilingual-zh-en-2023-02-20/"
     "encoder.rknn";
@@ -39,7 +39,7 @@ const std::string TOKENS_PATH =
     "/home/asr/models/sherpa-onnx-rk3588-streaming-zipformer-bilingual-zh-en-2023-02-20/"
     "tokens.txt";
 
-const std::string PROVIDER = "rknn";  // **** 修改为 "rknn" 如果你在RK3588上运行 ****
+const std::string PROVIDER = "rknn";
 // --num-threads=1 to select RKNN_NPU_CORE_AUTO
 // --num-threads=0 to select RKNN_NPU_CORE_0
 // --num-threads=-1 to select RKNN_NPU_CORE_1
@@ -78,7 +78,7 @@ bool ASRTaskSherpa::isCompleted() const {
 }
 
 bool ASRTaskSherpa::init() {
-	// --- 1. 初始化 ASR 引擎 ---
+	// --- 1. Init ASR Engine  ---
 	arcforge::embedded::ai_asr::SherpaConfig config =
 	    arcforge::embedded::ai_asr::SherpaConfig::Builder()
 	        .setFirstEncoderPath(ENCODER_PATH)
@@ -108,30 +108,29 @@ void ASRTaskSherpa::run() {
 	arcforge::embedded::utils::Logger::GetInstance().Info(
 	    "Worker thread started for a new client.");
 
-	// 主循环，由原子标志位 stop_flag_ 控制
 	while (stop_flag_ == false) {
 
 		std::vector<float> audio_chunk;
 		arcforge::embedded::network_socket::SocketReturnValue retval;
 
-		// --- 步骤 1: 安全地接收数据 ---
-		// 在访问 client_ 之前，必须加锁。
-		// 这个锁会保护整个 receiveFloat 调用，确保在接收期间，主线程不会 reset client_。
+		// step 1: Safely receive data
+		// Before accessing client_, we must lock.
+		// Must protect the entire receiveFloat call to ensure that the main thread does not reset client_ during reception.
 		{
 			std::lock_guard<std::mutex> lock(client_mutex_);
 
-			// 再次检查 client_，因为它可能在两次循环之间被 stop_me() 销毁
+			// check again for client_ because it might have been destroyed by stop_me() between loops
 			if (!client_) {
-				// 如果 client_ 没了，说明被要求停止，直接退出循环
+				// if client_ is null, it means we are asked to stop, so just exit the loop
 				break;
 			}
 
-			// 在锁的保护下调用阻塞的 IO 方法
+			// This call may block for a long time, but we must hold the lock to prevent client_ from being reset.
 			retval = client_->receiveFloat(audio_chunk);
-		}  // 锁在此处自动释放
+		}
 
-		// --- 步骤 2: 处理接收结果 ---
-		// 如果接收不成功（包括被 stop_me 中断），则退出循环
+		// --- Step 2: Process received data ---
+		// if (receive failed, including being interrupted by stop_me), exit the loop
 		if (retval != arcforge::embedded::network_socket::SocketReturnValue::ksuccess) {
 			std::string reason;
 			switch (retval) {
@@ -173,132 +172,45 @@ void ASRTaskSherpa::run() {
 			}
 			arcforge::embedded::utils::Logger::GetInstance().Info(
 			    "Exiting worker thread. Reason: " + reason);
-			break;  // 退出 while 循环
+			break;
 		}
 
-		// --- 步骤 3: ASR 处理 (这部分是纯计算，不需要锁) ---
+		// --- Step 3: ASR processing (this is pure computation, no locking needed) ---
 		asr_engine_.ProcessAudioChunk(audio_chunk);
 		std::string recognized_text = asr_engine_.GetCurrentText();
 
-		// --- 步骤 4: 安全地发送结果 ---
-		// 同样，在访问 client_ 之前加锁
+		// --- Step 4: Safely send result ---
+		// Similarly, lock before accessing client_
 		{
 			std::lock_guard<std::mutex> lock(client_mutex_);
 
 			if (!client_) {
 				arcforge::embedded::utils::Logger::GetInstance().Warning(
 				    "Client connection was closed before sending result.");
-				break;  // 退出 while 循环
+				break;
 			}
 
 			retval = client_->sendString(recognized_text);
-		}  // 锁在此处自动释放
+		}
 
-		// 如果发送失败，也退出循环
+		// if send failed, exit the loop
 		if (retval != arcforge::embedded::network_socket::SocketReturnValue::ksuccess) {
 			arcforge::embedded::utils::Logger::GetInstance().Error(
 			    "Failed to send string data, exiting worker thread.");
 			break;
 		}
 
-		// --- 步骤 5: 重置 ASR 流 (不需要锁) ---
+		// --- Step 5: Reset ASR stream (no locking needed) ---
 		asr_engine_.ResetStream();
 	}
 
-	// --- 循环结束后的统一清理工作 ---
+	// universal cleanup after loop exit
 	finished_flag_ = true;
 	arcforge::embedded::utils::Logger::GetInstance().Info(
 	    "ASRTaskSherpa run loop finished, worker thread is now exiting.");
 }
-// void ASRTaskSherpa::run() {
-// 	while (1) {
-// 		if (stop_flag_ == true) {
-// 			arcforge::embedded::utils::Logger::GetInstance().Debug(
-// 			    "ASRTaskSherpa class run() return right now", kcurrent_app_name);
-// 			break;
 
-// 		} else {
-// 			// std::stringstream ss;
-// 			// ss << std::this_thread::get_id() << ": "
-// 			//    << "wow, ASRTaskSherpa::run() 20000 again!";
-// 			// arcforge::embedded::utils::Logger::GetInstance().Debug(ss.str());
-// 			// i = 0;
-
-// 			// std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-// 			//--------------------------------------------------------------
-// 			// --- 3. 循环处理 ---
-// 			if (client_ == nullptr) {
-// 				arcforge::embedded::utils::Logger::GetInstance().Error(
-// 				    "ASRTaskSherpa`s client_ is nullptr");
-
-// 				continue;
-// 			}
-
-// 			//----------------------------------
-// 			// means we have data now
-// 			std::vector<float> audio_chunk;
-// 			arcforge::embedded::network_socket::SocketReturnValue retval =
-// 			    client_->receiveFloat(audio_chunk);
-// 			if (retval > arcforge::embedded::network_socket::SocketReturnValue::ksuccess) {
-// 				arcforge::embedded::utils::Logger::GetInstance().Debug(
-// 				    arcforge::embedded::network_socket::SocketReturnValueToString(retval));
-
-// 				if (retval ==
-// 				    arcforge::embedded::network_socket::SocketReturnValue::kpeer_abnormally_closed) {
-// 					std::stringstream ss;
-// 					ss << std::this_thread::get_id() << ": "
-// 					   << "Peer abnormally closed, terminate myself.";
-// 					arcforge::embedded::utils::Logger::GetInstance().Warning(ss.str());
-
-// 					// return;
-// 					break;
-// 				}
-
-// 				arcforge::embedded::utils::Logger::GetInstance().Error(
-// 				    "SocketServer (via client_connection) failed to receive "
-// 				    "float data.\n drop this packet ",
-// 				    kcurrent_app_name);
-// 				continue;
-// 			}
-
-// 			// judge if meet eof(end of file)
-// 			if (retval == arcforge::embedded::network_socket::SocketReturnValue::keof) {
-// 				arcforge::embedded::utils::Logger::GetInstance().Debug("Received EOF from client",
-// 				                                                     kcurrent_app_name);
-// 				break;
-// 			}
-
-// 			asr_engine_.ProcessAudioChunk(audio_chunk);
-
-// 			std::string recognized_text = asr_engine_.GetCurrentText();
-// 			std::ostringstream oss;
-// 			oss << "Segmentsss " << recognized_text;
-// 			arcforge::embedded::utils::Logger::GetInstance().Debug(oss.str(), kcurrent_app_name);
-// 			retval = client_->sendString(recognized_text);
-// 			if (retval > arcforge::embedded::network_socket::SocketReturnValue::ksuccess) {
-
-// 				arcforge::embedded::utils::Logger::GetInstance().Error(
-// 				    "SocketServer (via client_connection) failed to send std::string data.\n "
-// 				    "just goto next",
-// 				    kcurrent_app_name);
-// 				continue;
-// 			}
-
-// 			// reset stream
-// 			asr_engine_.ResetStream();
-
-// 			arcforge::embedded::utils::Logger::GetInstance().Debug(
-// 			    "+++++last statement of this round of loop\n", kcurrent_app_name);
-// 		}
-// 	}
-
-// 	// 循环结束后的清理工作
-// 	finished_flag_ = true;  // <--- 循环正常结束后也要设置标志
-// 	arcforge::embedded::utils::Logger::GetInstance().Info(
-// 	    "ASRTaskSherpa run loop finished(finished flag has been set to true).");
-// }
-
-// stop_me() 的最终线程安全版本
+// stop_me() final thread-safe version
 void ASRTaskSherpa::stop_me() {
 	stop_flag_ = true;
 	std::lock_guard<std::mutex> lock(client_mutex_);
@@ -306,8 +218,3 @@ void ASRTaskSherpa::stop_me() {
 		client_.reset();
 	}
 }
-// void ASRTaskSherpa::stop_me() {
-// 	stop_flag_ = true;
-// 	arcforge::embedded::utils::Logger::GetInstance().Info(
-// 	    "ASRTaskSherpa has set stop flag, infinite loop will be notified at its next run.");
-// }

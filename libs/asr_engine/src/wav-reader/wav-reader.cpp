@@ -25,7 +25,7 @@ namespace arcforge {
 namespace embedded {
 namespace ai_asr {
 
-// Helper to read little-endian values (保持不变，这个很好)
+// Helper to read little-endian values
 template <typename T>
 T read_le(std::istream& is) {
 	T val;
@@ -33,7 +33,7 @@ T read_le(std::istream& is) {
 	return val;
 }
 
-WavReader::WavReader() {}  // 默认构造函数
+WavReader::WavReader() {}
 
 WavReader::~WavReader() {
 	Close();
@@ -56,12 +56,7 @@ bool WavReader::Open(const std::string& filepath, int expected_sample_rate, int 
 		return false;
 	}
 
-	// data_chunk_pos_ 是 std::streamoff，seekg 参数类型是 std::streamoff 或 std::streampos
-	// 这里不需要转换，本身是匹配的。原来的警告可能是因为 data_chunk_pos_ 之前被声明为 size_t？
-	// 确认 data_chunk_pos_ 在 .h 中是 std::streamoff。
-	wav_file_.seekg(data_chunk_pos_, std::ios::beg);  // 定位到数据块开始
-	// 为了更明确，如果 data_chunk_pos_ 是 size_t，可以这样:
-	// wav_file_.seekg(static_cast<std::streamoff>(data_chunk_pos_), std::ios::beg);  // <-- line 35
+	wav_file_.seekg(data_chunk_pos_, std::ios::beg);
 
 	if (!wav_file_) {
 		arcforge::embedded::utils::Logger::GetInstance().Error(
@@ -88,26 +83,27 @@ bool WavReader::Open(const std::string& filepath, int expected_sample_rate, int 
 void WavReader::Close() {
 	if (wav_file_.is_open()) {
 		wav_file_.close();
-		arcforge::embedded::utils::Logger::GetInstance().Info("WAV file closed.", kcurrent_lib_name);
+		arcforge::embedded::utils::Logger::GetInstance().Info("WAV file closed.",
+		                                                      kcurrent_lib_name);
 	}
 	is_opened_ = false;
-	eof_ = true;  // 在关闭时，逻辑上也是文件末尾
+	eof_ = true;
 }
 
 bool WavReader::ParseWavHeader(int expected_sample_rate, int expected_channels) {
 	char buffer[4];
 	// RIFF chunk
 	wav_file_.read(buffer, 4);
-	if (!wav_file_ || std::memcmp(buffer, "RIFF", 4) != 0) {  // 增加对 read 失败的检查
+	if (!wav_file_ || std::memcmp(buffer, "RIFF", 4) != 0) {
 		arcforge::embedded::utils::Logger::GetInstance().Error("Not a RIFF file or read error",
-		                                                     kcurrent_lib_name);
+		                                                       kcurrent_lib_name);
 		return false;
 	}
 	read_le<uint32_t>(wav_file_);
 	wav_file_.read(buffer, 4);
 	if (!wav_file_ || std::memcmp(buffer, "WAVE", 4) != 0) {
 		arcforge::embedded::utils::Logger::GetInstance().Error("Not a WAVE file or read error",
-		                                                     kcurrent_lib_name);
+		                                                       kcurrent_lib_name);
 		return false;
 	}
 
@@ -116,7 +112,7 @@ bool WavReader::ParseWavHeader(int expected_sample_rate, int expected_channels) 
 		uint32_t sub_chunk_size = read_le<uint32_t>(wav_file_);
 		if (!wav_file_) {
 			arcforge::embedded::utils::Logger::GetInstance().Error("Read error after sub-chunk ID",
-			                                                     kcurrent_lib_name);
+			                                                       kcurrent_lib_name);
 			return false;
 		}
 
@@ -125,43 +121,41 @@ bool WavReader::ParseWavHeader(int expected_sample_rate, int expected_channels) 
 			uint16_t audio_format = read_le<uint16_t>(wav_file_);
 			if (!wav_file_) {
 				arcforge::embedded::utils::Logger::GetInstance().Error("Read error (audio_format)",
-				                                                     kcurrent_lib_name);
+				                                                       kcurrent_lib_name);
 				return false;
 			}
-			channels_ = static_cast<int>(read_le<uint16_t>(wav_file_));  // uint16_t to int (安全)
+			channels_ = static_cast<int>(read_le<uint16_t>(wav_file_));
 			if (!wav_file_) {
 				arcforge::embedded::utils::Logger::GetInstance().Error("Read error (channels)",
-				                                                     kcurrent_lib_name);
+				                                                       kcurrent_lib_name);
 				return false;
 			}
 
-			// sample_rate_ 是 int, read_le<uint32_t> 返回 uint32_t
-			uint32_t sr_u32 = read_le<uint32_t>(wav_file_);  // <-- line 87 原警告处
+			uint32_t sr_u32 = read_le<uint32_t>(wav_file_);
 			if (!wav_file_) {
 				arcforge::embedded::utils::Logger::GetInstance().Error("Read error (sample_rate)",
-				                                                     kcurrent_lib_name);
+				                                                       kcurrent_lib_name);
 				return false;
 			}
-			if (sr_u32 > static_cast<uint32_t>(std::numeric_limits<int>::max())) {  // 检查溢出
+			if (sr_u32 > static_cast<uint32_t>(std::numeric_limits<int>::max())) {
 				arcforge::embedded::utils::Logger::GetInstance().Error(
 				    "Sample rate value too large for int type.", kcurrent_lib_name);
 				return false;
 			}
-			sample_rate_ = static_cast<int>(sr_u32);  // 明确转换
+			sample_rate_ = static_cast<int>(sr_u32);
 
 			read_le<uint32_t>(wav_file_);  // Byte rate
 			read_le<uint16_t>(wav_file_);  // Block align
-			bits_per_sample_ =
-			    static_cast<int>(read_le<uint16_t>(wav_file_));  // uint16_t to int (安全)
+			bits_per_sample_ = static_cast<int>(read_le<uint16_t>(wav_file_));
 			if (!wav_file_) {
-				arcforge::embedded::utils::Logger::GetInstance().Error("Read error (bits_per_sample)",
-				                                                     kcurrent_lib_name);
+				arcforge::embedded::utils::Logger::GetInstance().Error(
+				    "Read error (bits_per_sample)", kcurrent_lib_name);
 				return false;
 			}
 
 			if (audio_format != 1) {
 				arcforge::embedded::utils::Logger::GetInstance().Error("Not PCM format in WAV",
-				                                                     kcurrent_lib_name);
+				                                                       kcurrent_lib_name);
 				return false;
 			}
 			if (sample_rate_ != expected_sample_rate) {
@@ -169,21 +163,21 @@ bool WavReader::ParseWavHeader(int expected_sample_rate, int expected_channels) 
 				oss << "WAV sample rate (" << sample_rate_ << ") differs from expected ("
 				    << expected_sample_rate << "). Output might be incorrect.";
 				arcforge::embedded::utils::Logger::GetInstance().Warning(oss.str(),
-				                                                       kcurrent_lib_name);
+				                                                         kcurrent_lib_name);
 			}
-			if (channels_ <= 0) {  // 增加对声道数的有效性检查
+			if (channels_ <= 0) {
 				std::ostringstream oss;
 				oss << "Invalid number of channels: " << channels_;
-				arcforge::embedded::utils::Logger::GetInstance().Error(oss.str(), kcurrent_lib_name);
+				arcforge::embedded::utils::Logger::GetInstance().Error(oss.str(),
+				                                                       kcurrent_lib_name);
 				return false;
 			}
-			if (channels_ != expected_channels &&
-			    expected_channels != 0) {  // 允许 expected_channels 为0表示不检查
+			if (channels_ != expected_channels && expected_channels != 0) {
 				std::ostringstream oss;
 				oss << "WAV channels (" << channels_ << ") differs from expected ("
 				    << expected_channels << "). Will use first channel if multi-channel.";
 				arcforge::embedded::utils::Logger::GetInstance().Warning(oss.str(),
-				                                                       kcurrent_lib_name);
+				                                                         kcurrent_lib_name);
 			}
 			if (bits_per_sample_ != 16) {
 				arcforge::embedded::utils::Logger::GetInstance().Error(
@@ -191,7 +185,6 @@ bool WavReader::ParseWavHeader(int expected_sample_rate, int expected_channels) 
 				return false;
 			}
 
-			// uint32_t 通常大于16，这里用 streamoff 做 seek 偏移量
 			if (sub_chunk_size > 16) {  // 16 is sizeof(common PCM fmt sub-chunk data part)
 				std::streamoff offset = static_cast<std::streamoff>(sub_chunk_size) - 16;
 				wav_file_.seekg(offset, std::ios::cur);
@@ -205,8 +198,8 @@ bool WavReader::ParseWavHeader(int expected_sample_rate, int expected_channels) 
 		} else {
 			wav_file_.seekg(static_cast<std::streamoff>(sub_chunk_size), std::ios::cur);
 			if (!wav_file_) {
-				arcforge::embedded::utils::Logger::GetInstance().Error("Seek error past other chunk",
-				                                                     kcurrent_lib_name);
+				arcforge::embedded::utils::Logger::GetInstance().Error(
+				    "Seek error past other chunk", kcurrent_lib_name);
 				return false;
 			}
 		}
@@ -228,15 +221,10 @@ bool WavReader::ParseWavHeader(int expected_sample_rate, int expected_channels) 
 
 		if (std::memcmp(buffer, "data", 4) == 0) {
 			data_found = true;
-			// data_chunk_pos_ 是 std::streamoff, tellg() 返回 std::streampos (可以隐式转为 streamoff)
-			data_chunk_pos_ = wav_file_.tellg();
-			// 如果 data_chunk_pos_ 声明为 size_t:
-			// data_chunk_pos_ = static_cast<size_t>(
-			//     wav_file_.tellg());  // <-- line 132 (假设 data_chunk_pos_ 是 size_t)
 
-			// 如果是 std::streamoff 则不需要cast
-			data_chunk_size_ =
-			    static_cast<size_t>(sub_chunk_size_data_u32);  // uint32_t to size_t (安全)
+			data_chunk_pos_ = wav_file_.tellg();
+
+			data_chunk_size_ = static_cast<size_t>(sub_chunk_size_data_u32);  // uint32_t to size_t
 			break;
 		} else {
 			wav_file_.seekg(static_cast<std::streamoff>(sub_chunk_size_data_u32), std::ios::cur);
@@ -260,7 +248,7 @@ size_t WavReader::ReadSamples(std::vector<float>& out_samples, size_t num_sample
 		out_samples.clear();
 		return 0;
 	}
-	if (bits_per_sample_ == 0 || channels_ == 0) {  // 防御除零
+	if (bits_per_sample_ == 0 || channels_ == 0) {  //Defensive division by zero
 		arcforge::embedded::utils::Logger::GetInstance().Error(
 		    "Error: bits_per_sample or channels is zero.", kcurrent_lib_name);
 		out_samples.clear();
@@ -268,9 +256,8 @@ size_t WavReader::ReadSamples(std::vector<float>& out_samples, size_t num_sample
 		return 0;
 	}
 
-	// 所有涉及大小计算的都尽量用 size_t
 	size_t bytes_per_sample_all_channels = static_cast<size_t>(bits_per_sample_ / 8 * channels_);
-	if (bytes_per_sample_all_channels == 0) {  // 进一步防御
+	if (bytes_per_sample_all_channels == 0) {
 		arcforge::embedded::utils::Logger::GetInstance().Error(
 		    "Error: bytes_per_sample_all_channels is zero.", kcurrent_lib_name);
 		out_samples.clear();
@@ -279,10 +266,9 @@ size_t WavReader::ReadSamples(std::vector<float>& out_samples, size_t num_sample
 	}
 
 	size_t max_samples_remaining_in_chunk = 0;
-	if (data_chunk_size_ >=
-	    bytes_read_from_data_chunk_) {  // 确保减法不溢出 (虽然都是size_t理论上ok)
-		max_samples_remaining_in_chunk = (data_chunk_size_ - bytes_read_from_data_chunk_) /
-		                                 bytes_per_sample_all_channels;  // <-- line 155
+	if (data_chunk_size_ >= bytes_read_from_data_chunk_) {
+		max_samples_remaining_in_chunk =
+		    (data_chunk_size_ - bytes_read_from_data_chunk_) / bytes_per_sample_all_channels;
 	} else {
 		// Should not happen if logic is correct, but defensive.
 		arcforge::embedded::utils::Logger::GetInstance().Warning(
@@ -297,30 +283,26 @@ size_t WavReader::ReadSamples(std::vector<float>& out_samples, size_t num_sample
 		return 0;
 	}
 
-	out_samples.resize(actual_samples_to_read);  // 用 size_t
-	std::vector<int16_t> temp_s16_buffer(actual_samples_to_read *
-	                                     static_cast<size_t>(channels_));  // <-- line 166
+	out_samples.resize(actual_samples_to_read);
+	std::vector<int16_t> temp_s16_buffer(actual_samples_to_read * static_cast<size_t>(channels_));
 
-	size_t bytes_to_read = actual_samples_to_read * bytes_per_sample_all_channels;  // <-- line 169
-	    // (bits_per_sample_/8) 也用size_t
-	wav_file_.read(
-	    reinterpret_cast<char*>(temp_s16_buffer.data()),
-	    static_cast<std::streamsize>(bytes_to_read));  // read 的第二个参数是 std::streamsize
+	size_t bytes_to_read = actual_samples_to_read * bytes_per_sample_all_channels;
 
-	if (!wav_file_ && !wav_file_.eof()) {  // 检查读取错误（非EOF）
+	wav_file_.read(reinterpret_cast<char*>(temp_s16_buffer.data()),
+	               static_cast<std::streamsize>(bytes_to_read));
+
+	if (!wav_file_ && !wav_file_.eof()) {
 		arcforge::embedded::utils::Logger::GetInstance().Error("Error reading WAV data.",
-		                                                     kcurrent_lib_name);
+		                                                       kcurrent_lib_name);
 		out_samples.clear();
 		eof_ = true;
 		return 0;
 	}
 
-	size_t bytes_just_read =
-	    static_cast<size_t>(wav_file_.gcount());  // <-- line 170, gcount() 返回 streamsize
+	size_t bytes_just_read = static_cast<size_t>(wav_file_.gcount());
 	size_t samples_just_read_per_channel = 0;
 	if (bytes_per_sample_all_channels > 0) {
-		samples_just_read_per_channel =
-		    bytes_just_read / bytes_per_sample_all_channels;  // <-- line 171
+		samples_just_read_per_channel = bytes_just_read / bytes_per_sample_all_channels;
 	}
 
 	bytes_read_from_data_chunk_ += bytes_just_read;
@@ -336,16 +318,15 @@ size_t WavReader::ReadSamples(std::vector<float>& out_samples, size_t num_sample
 		}
 	}
 
-	if (static_cast<size_t>(channels_) ==
-	    0) {  // 再次检查 channels_，虽然 ParseWavHeader 应该已经保证
+	if (static_cast<size_t>(channels_) == 0) {
 		arcforge::embedded::utils::Logger::GetInstance().Error(
 		    "Error: channels_ is zero before processing samples.", kcurrent_lib_name);
-		out_samples.clear();  // 清空，因为无法处理
+		out_samples.clear();
 		return 0;
 	}
 
 	for (size_t i = 0; i < samples_just_read_per_channel; ++i) {
-		// temp_s16_buffer[i * static_cast<size_t>(channels_)] // <-- line 186
+
 		out_samples[i] =
 		    static_cast<float>(temp_s16_buffer[i * static_cast<size_t>(channels_)]) / 32768.0f;
 	}
@@ -353,23 +334,13 @@ size_t WavReader::ReadSamples(std::vector<float>& out_samples, size_t num_sample
 	if (bytes_read_from_data_chunk_ >= data_chunk_size_) {
 		eof_ = true;
 	}
-	if (wav_file_.eof()) {  // 文件流的 EOF 状态也检查
+	if (wav_file_.eof()) {
 		eof_ = true;
 	}
 
 	return samples_just_read_per_channel;
 }
 
-// 假设 WavReader.h 中有:
-// int channels_;
-// int sample_rate_;
-// int bits_per_sample_;
-// std::streamoff data_chunk_pos_; // 或者 size_t data_chunk_pos_;
-// size_t data_chunk_size_;
-// size_t bytes_read_from_data_chunk_;
-// bool is_opened_;
-// bool eof_;
-// std::ifstream wav_file_;
 }  // namespace ai_asr
 }  // namespace embedded
 }  // namespace arcforge

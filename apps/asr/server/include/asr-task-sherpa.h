@@ -31,9 +31,9 @@
 #include "Utils/logger/logger.h"
 
 enum class ASRTaskStatus {
-	kIdle = 0x01,       // 空闲：没有正在处理的任务
-	kRunning = 0x02,    // 运行中：一个任务正在被线程执行
-	kCompleted = 0x03,  // 已完成：任务成功结束，可以被清理
+	kIdle = 0x01,       // idle: task is created but not yet started
+	kRunning = 0x02,    // running: a task is being executed by a thread
+	kCompleted = 0x03,  // task finished successfully and can be cleaned up
 	                    // kUnhired = 0x01,         //means worker is not hired
 	// kHiredWorking = 0x02,    //means worker has been hired and actually working
 	// kHiredCompleted = 0x03,  // means worker has been hired and finished his job
@@ -70,7 +70,7 @@ class ASRTaskSherpa {
 	// std::mutex mutex_;
 	std::mutex client_mutex_;
 	std::unique_ptr<arcforge::embedded::network_socket::Base> client_ = nullptr;
-	std::atomic<bool> finished_flag_{false};  // 初始化为 false
+	std::atomic<bool> finished_flag_{false};
 	// arcforge::embedded::ai_asr::SherpaConfig sherpa_config_;
 };
 

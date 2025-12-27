@@ -25,7 +25,6 @@ namespace arcforge {
 namespace embedded {
 namespace utils {
 
-// 辅助函数，用于格式化时间戳
 static std::string format_timestamp(const std::chrono::system_clock::time_point& tp) {
 	std::time_t time = std::chrono::system_clock::to_time_t(tp);
 	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()) % 1000;

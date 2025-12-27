@@ -455,10 +455,10 @@ function(arc_install_library target_name include_dir)
     # 8. Install Export list (Targets.cmake)
     #    It will sync all Target information into files
     install(
-        EXPORT ${target_name}                                       # <-- 告诉 CMake 我们要安装哪个导出集
-        FILE "${FULL_PACKAGE_NAME}Targets.cmake"                    # 生成的 .cmake 文件名
-        NAMESPACE "${PROJECT_NAMESPACE}::"                          # (推荐) 为目标添加命名空间，避免冲突
-        DESTINATION "${INSTALL_CONFIG_DIR}"                         # 标准的安装路径
+        EXPORT ${target_name}                                       # <-- Tell CMake which export set we want to install
+        FILE "${FULL_PACKAGE_NAME}Targets.cmake"                    # Name of the generated .cmake file
+        NAMESPACE "${PROJECT_NAMESPACE}::"                          # (Recommended) Add a namespace to targets to avoid conflicts
+        DESTINATION "${INSTALL_CONFIG_DIR}"                         # Standard installation path for config files
     )
 
     message(STATUS "[Configuration] Configured install rules for lib: ${target_name}")

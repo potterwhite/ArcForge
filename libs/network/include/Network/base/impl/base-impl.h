@@ -20,14 +20,11 @@
  * SOFTWARE.
  */
 
-// 文件: base/impl/base-impl.h
+// libs/network/include/Network/base/impl/base-impl.h
 #pragma once
 
 #include "Network/common/common-types.h"
 #include "Network/pch.h"
-
-// 向前声明你自己的配置类，因为 Impl 需要它
-// #include "base/base-config.h"  // << 注意路径，相对于 impl 目录调整
 
 namespace arcforge {
 namespace embedded {
@@ -49,12 +46,13 @@ struct SocketAcceptImplReturn {
 class BaseImpl {
    public:
 	BaseImpl();
-	~BaseImpl();  // 确保在 .cpp 中定义
+	~BaseImpl();
 
-	// 禁止拷贝和赋值
+	// forbitd copy and assignment
 	BaseImpl(const BaseImpl&) = delete;
 	BaseImpl& operator=(const BaseImpl&) = delete;
-	// 允许移动 (如果需要)
+
+	// permit move semantics
 	BaseImpl(BaseImpl&&) noexcept = default;
 	BaseImpl& operator=(BaseImpl&&) noexcept = default;
 
@@ -84,7 +82,7 @@ class BaseImpl {
 
 	// server-utilized-only functions
 	SocketReturnValue startServer(
-	    const size_t& timeout = static_cast<size_t>(-1));  // 启动Unix域socket服务器
+	    const size_t& timeout = static_cast<size_t>(-1)); 
 	SocketAcceptImplReturn acceptClient();
 	SocketReturnValue unlinkSocketPath();
 

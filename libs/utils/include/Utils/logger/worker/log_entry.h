@@ -28,16 +28,16 @@ namespace arcforge {
 namespace embedded {
 namespace utils {
 
-// 前向声明 LoggerLevel，避免与 logger.h 循环引用
+// Forward declaration of LoggerLevel to avoid circular dependency with logger.h
 enum class LoggerLevel;
 
-// 日志条目结构体，封装一条日志的所有原始信息
+// Log entry structure encapsulating all raw information of a log
 struct LogEntry {
 	std::chrono::system_clock::time_point timestamp;
 	LoggerLevel level;
 	std::string message;
-	std::string_view tag;  // <--- 2. 添加成员
-	                       // 未来可扩展：
+	std::string_view tag;  // <--- 2. Add tag field
+	                       // Expanding future capabilities:
 	                       // std::thread::id thread_id;
 	                       // const char* file;
 	                       // int line;

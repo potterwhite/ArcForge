@@ -28,44 +28,9 @@ namespace arcforge {
 namespace embedded {
 namespace network_socket {
 
-ClientBase::ClientBase() {
-	// Base类构造函数已经处理了基础初始化
-}
+ClientBase::ClientBase() {}
 
-ClientBase::~ClientBase() {
-	// Base类析构函数会处理socket关闭
-}
-
-// SocketReturnValue ClientBase::connectToServer() {
-// 	// 创建Unix域socket
-// 	int sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
-// 	if (sock_fd < 0) {
-// 		return SocketReturnValue::kfd_illegal;
-// 	}
-
-// 	// socket path verification
-// 	if (getSocketPath().empty() == true) {
-// 		std::cerr << "Socket path is empty, pls set it before you connect to server." << std::endl;
-// 		return SocketReturnValue::ksocketpath_empty;
-// 	}
-
-// 	// 设置服务器地址
-// 	struct sockaddr_un server_addr;
-// 	memset(&server_addr, 0, sizeof(server_addr));
-// 	server_addr.sun_family = AF_UNIX;
-// 	strncpy(server_addr.sun_path, getSocketPath().c_str(), sizeof(server_addr.sun_path) - 1);
-
-// 	// 连接到服务器
-// 	if (connect(sock_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-// 		perror("Client connect failed");
-// 		close(sock_fd);
-// 		return SocketReturnValue::kconnect_server_failed;
-// 	}
-
-// 	this->setFD(sock_fd);  // <--- 关键: ClientBase (作为Base的子类) 设置其连接FD
-// 	// TODO: 需要设置sock_fd到Base类
-// 	return SocketReturnValue::ksuccess;
-// }
+ClientBase::~ClientBase() {}
 
 }  // namespace network_socket
 }  // namespace embedded

@@ -19,24 +19,10 @@
 # SOFTWARE.
 
 #
-# sherpa-lib/src/wav-reader/CMakeLists.txt
+# libs/asr_engine/src/wav-reader/CMakeLists.txt
 #
 
 set(WAV_READER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/wav-reader.cpp")
-
-#[[
-set(WAV_READER_PUBLIC_HEADERS "${INCLUDE_DIR}/ASR/wav-reader/wav-reader.h")
-
-# 上报给父级
-set(LIB_SOURCES
-	${LIB_SOURCES} ${WAV_READER_SOURCES}
-	PARENT_SCOPE)
-set(LIB_PUBLIC_HEADERS
-	${LIB_PUBLIC_HEADERS} ${WAV_READER_PUBLIC_HEADERS}
-	PARENT_SCOPE)
-
-install(FILES ${WAV_READER_PUBLIC_HEADERS} DESTINATION include/${PROJECT_NAME}/wav-reader)
-]]
 
 target_sources(${PROJECT_NAME}
     PRIVATE

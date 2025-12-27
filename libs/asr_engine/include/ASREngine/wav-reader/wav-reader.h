@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include "ASREngine/pch.h"
 #include "ASREngine/common/common-types.h"
+#include "ASREngine/pch.h"
 
 namespace arcforge {
 namespace embedded {
@@ -37,8 +37,6 @@ class WavReader {
 	          int expected_channels = 1);
 	void Close();
 
-	// 读取指定数量的样本到float向量 (归一化到 -1.0 到 1.0)
-	// 返回实际读取的样本数
 	size_t ReadSamples(std::vector<float>& out_samples, size_t num_samples_to_read);
 	bool IsOpened() const { return is_opened_; }
 	bool Eof() const { return eof_ || !wav_file_.is_open(); }
@@ -54,12 +52,11 @@ class WavReader {
 	int sample_rate_ = 0;
 	int channels_ = 0;
 	int bits_per_sample_ = 0;
-	// size_t data_chunk_pos_ = 0;   // PCM数据块在文件中的起始位置
+
 	std::streamoff data_chunk_pos_ = 0;
-	size_t data_chunk_size_ = 0;  // PCM数据块的大小 (字节)
+	size_t data_chunk_size_ = 0;
 	size_t bytes_read_from_data_chunk_ = 0;
 
-	// 简化的WAV头解析
 	bool ParseWavHeader(int expected_sample_rate, int expected_channels);
 };
 }  // namespace ai_asr

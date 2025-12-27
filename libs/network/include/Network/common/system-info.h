@@ -28,8 +28,8 @@ namespace embedded {
 namespace network_socket {
 
 /**
- * @brief 获取 库的编译时版本字符串。
- * @return 一个格式为 "major.minor.patch" 的字符串。
+ * @brief Obtain the library's compile-time version string.
+ * @return A string in the format "major.minor.patch".
  */
 std::string get_network_socket_library_version();
 

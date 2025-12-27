@@ -29,7 +29,7 @@ include(FetchContent)
 message(STATUS "[Configuration][ThirdParty] Preparing Sherpa-Onnx...")
 
 # ---------------------------------
-# II. Declare Download Detail声明下载详情
+# II. Declare Download Detail
 # ---------------------------------
 # These variables come from CMakePresets.json
 if(NOT DEFINED SHERPA_ONNX_URL OR NOT DEFINED SHERPA_ONNX_HASH)
@@ -61,8 +61,9 @@ FetchContent_Declare(
     sherpa_onnx_pkg
     URL      ${CHOSEN_SHERPA_URL}
     URL_HASH ${SHERPA_ONNX_HASH}
-    # 下载并解压到 build/_deps/sherpa_onnx_pkg-src
-    # DOWNLOAD_NO_EXTRACT FALSE (默认就是自动解压)
+    # Download and Decompress unto the directory of "build/_deps/sherpa_onnx_pkg-src"
+    # Default is FALSE
+    # DOWNLOAD_NO_EXTRACT FALSE
 )
 
 # ---------------------------------
@@ -70,7 +71,6 @@ FetchContent_Declare(
 # ---------------------------------
 FetchContent_MakeAvailable(sherpa_onnx_pkg)
 
-# 获取解压后的根目录路径
 set(SHERPA_ROOT "${sherpa_onnx_pkg_SOURCE_DIR}")
 message(STATUS "[Configuration][ThirdParty] Sherpa-Onnx mounted at: ${SHERPA_ROOT}")
 
