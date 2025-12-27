@@ -21,14 +21,12 @@
 #include "pch.h"
 
 #include "Utils/logger/logger.h"
-#include "Utils/logger/worker/consolesink.h"  // 仅在配置时需要
+#include "Utils/logger/worker/consolesink.h"
 #include "Utils/logger/worker/filesink.h"
 #include "acceptor.h"
 #include "common-types.h"
 
-// --- 全局用于信号处理 ---
-// static bool g_stop_signal_received = false;
-static std::atomic<bool> g_stop_signal_received(false);  // 修改后的代码
+static std::atomic<bool> g_stop_signal_received(false);
 
 void SignalHandler(int signal_num) {
 	g_stop_signal_received = true;
@@ -52,32 +50,30 @@ bool isRelease() {
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
-	// 设置Ctrl+C信号处理器
 	signal(SIGINT, SignalHandler);
 	signal(SIGTERM, SignalHandler);
 
 	//*****************************************************
 	// logger level configuration
-	// 获取 Logger 实例
+	// obtain logger unique instance
 	auto& logger = arcforge::embedded::utils::Logger::GetInstance();
 
 	// std::cout << "[main] sizeof(arcforge::embedded::utils::FileSink) = "
 	//           << sizeof(arcforge::embedded::utils::FileSink) ;
 
-	// 1. 设置日志级别 (例如，只记录 Warning 及以上)
+	// 1. Configure logger level
 	if (isRelease() == true) {
 		logger.setLevel(arcforge::embedded::utils::LoggerLevel::kinfo);
 	} else {
 		logger.setLevel(arcforge::embedded::utils::LoggerLevel::kdebug);
 	}
 
-	// 2. 配置输出目标 (Sink)
-	logger.ClearSinks();  // 清空默认的控制台输出
-	logger.AddSink(std::make_shared<arcforge::embedded::utils::FileSink>(
-	    "/root/my_app_client.log"));  // 添加一个文件输出
+	// 2. Configure output targets (Sinks)
+	logger.ClearSinks();
+	logger.AddSink(
+	    std::make_shared<arcforge::embedded::utils::FileSink>("/root/my_app_client.log"));
 	logger.AddSink(std::make_shared<arcforge::embedded::utils::ConsoleSink>());
 
-	// // ... 你的其他应用程序代码 ...
 	logger.Info("Application has started.");
 
 	// socket path initialize
@@ -86,7 +82,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 	acceptor->setSocketPath(ksocket_path);
 	acceptor->init();
 
-	// --- 3. 循环处理 ---
 	while (1) {
 		if (g_stop_signal_received == true) {
 			logger.Warning("main() will send stop signal to Acceptor.");
@@ -98,7 +93,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 			acceptor->process();
 		}
 	}
-	// Recognizer 对象会在 main 结束时自动调用析构函数进行清理
+	// recognizer will be cleaned up automatically when main ends
 
 	std::stringstream ss;
 	ss << std::this_thread::get_id() << ": "

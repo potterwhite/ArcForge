@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "Network/base/base.h"
 #include "Network/common/common-types.h"
+#include "Network/base/base.h"
 
 namespace arcforge {
 namespace embedded {
@@ -27,7 +27,6 @@ namespace network_socket {
 
 const std::string_view kcurrent_lib_name = PROJECT_NAME;
 
-// 1. 每一个 member to string 的函数
 std::string SocketReturnValueToString(SocketReturnValue value) {
 	switch (value) {
 		case SocketReturnValue::ksuccess:
@@ -51,7 +50,7 @@ std::string SocketReturnValueToString(SocketReturnValue value) {
 			return "kcount_too_large (0x70)";
 		case SocketReturnValue::kempty_string:
 			return "kempty_string (0x71)";
-		case SocketReturnValue::kfd_illegal:  // 注意: 这个成员的值在新的 enum 中是 0x72
+		case SocketReturnValue::kfd_illegal:
 			return "kfd_illegal (0x72)";
 		case SocketReturnValue::keof:
 			return "keof (0x73)";
@@ -66,9 +65,9 @@ std::string SocketReturnValueToString(SocketReturnValue value) {
 			return "kbind_error (0x82)";
 		case SocketReturnValue::kpeer_abnormally_closed:
 			return "kpeer_abnormally_closed (0x83)";
-		case SocketReturnValue::kaccept_timeout:  // 新增成员
+		case SocketReturnValue::kaccept_timeout:
 			return "kaccept_timeout (0x84)";
-		case SocketReturnValue::ksetsocketopt_error:  // 新增成员
+		case SocketReturnValue::ksetsocketopt_error:
 			return "ksetsocketopt_error (0x85)";
 		// --- impl layer errors ---
 		case SocketReturnValue::kimpl_nullptr_error:
@@ -78,24 +77,20 @@ std::string SocketReturnValueToString(SocketReturnValue value) {
 			return "kinit_state (0xff)";
 		case SocketReturnValue::kunknownerror:
 			return "kunknownerror (0x100)";
-		// case SocketReturnValue::ksuccess_with_warning: return "ksuccess_with_warning (0xYY)"; // 示例未来扩展
+		// case SocketReturnValue::ksuccess_with_warning: return "ksuccess_with_warning (0xYY)";
 		default:
-			// 将int值转换为十六进制字符串，以便调试未知值
 			char hex_string[20];
-			// 使用 std::snprintf 需要 <cstdio>
+			// std::snprintf needs <cstdio>
 			std::snprintf(hex_string, sizeof(hex_string), "Unknown (0x%x)",
 			              static_cast<int>(value));
 			return hex_string;
 	}
 }
 
-// 2. 判断是否 success 的函数
-// 未来有多个 options 表示 success，可以在这里添加
 bool SocketReturnValueIsSuccess(SocketReturnValue value) {
 	switch (value) {
 		case SocketReturnValue::ksuccess:
-			// 示例：如果未来有其他成功状态
-			// case SocketReturnValue::ksuccess_with_warning:
+
 			return true;
 		// --- recv opts errors ---
 		case SocketReturnValue::kreceived_null:
@@ -123,16 +118,17 @@ bool SocketReturnValueIsSuccess(SocketReturnValue value) {
 		// ***************************
 		case SocketReturnValue::kinit_state:
 		case SocketReturnValue::kunknownerror:
-		default:  // 所有未明确指定为 success 的情况（包括上面列出的错误和任何未定义的值）都返回 false
+		default:
+			// all other unspecified values (including those listed above as errors and any undefined values) return false
 			return false;
 	}
 }
 
 SocketAcceptReturn::SocketAcceptReturn()
-    : return_value(SocketReturnValue::kinit_state), client(nullptr){};
+    : return_value(SocketReturnValue::kinit_state), client(nullptr) {};
 
 SocketAcceptReturn::SocketAcceptReturn(SocketReturnValue value, std::unique_ptr<Base> client_ptr)
-    : return_value(value), client(std::move(client_ptr)){};
+    : return_value(value), client(std::move(client_ptr)) {};
 
 }  // namespace network_socket
 }  // namespace embedded

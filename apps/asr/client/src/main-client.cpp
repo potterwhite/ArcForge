@@ -20,8 +20,8 @@
 
 #include "ASREngine/wav-reader/wav-reader.h"
 #include "Network/client/client.h"
-#include "Utils/logger/logger.h"  // 引入日志库
-#include "Utils/logger/worker/consolesink.h"  // 仅在配置时需要
+#include "Utils/logger/logger.h"
+#include "Utils/logger/worker/consolesink.h"
 #include "Utils/logger/worker/filesink.h"
 
 #include <chrono>
@@ -33,25 +33,21 @@
 #include <vector>
 
 using namespace arcforge::embedded;
-// using namespace arcforge::embedded::network_socket;
 
-// 假设 kcurrent_lib_name 在此编译单元中可用
-// 这里我们定义一个临时的，实际项目中可能来自别处
 const std::string_view kcurrent_app_name = "test-client";
 
 const std::string ksocket_path = "/tmp/soCket.paTh";
 const int ksample_rate = 16000;
-const int CHUNK_DURATION_MS = 800;  // 毫秒, 每次处理和sleep的时长
+const int CHUNK_DURATION_MS = 800;  // milliseconds
 
-// --- 全局用于信号处理 ---
+// --- kill signal capture ---
 // static bool g_stop_signal_received = false;
-static std::atomic<bool> g_stop_signal_received(false);  // 修改后的代码
+static std::atomic<bool> g_stop_signal_received(false);
 
 void SignalHandler(int signal_num) {
 	g_stop_signal_received = true;
 	std::ostringstream oss;
 	oss << "\nInterrupt signal (" << signal_num << ") received. Shutting down...";
-	// 使用 Logger 而不是 cerr
 	arcforge::embedded::utils::Logger::GetInstance().Warning(oss.str(), kcurrent_app_name);
 }
 
@@ -66,31 +62,26 @@ bool isRelease() {
 }
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
-	// 在主程序中，通常我们会配置 Logger。
-	// 如果没有特殊配置，它会使用默认的 ConsoleSink。
 	// auto& logger = arcforge::embedded::utils::Logger::GetInstance();
 	// logger.setLevel(arcforge::embedded::utils::LoggerLevel::kdebug);
 
 	//*****************************************************
 	// logger level configuration
-	// 获取 Logger 实例
+	// obtain logger unique instance
 	auto& logger = arcforge::embedded::utils::Logger::GetInstance();
 
-	// 1. 设置日志级别 (例如，只记录 Warning 及以上)
+	// 1. Configure logger level
 	if (isRelease() == true) {
 		logger.setLevel(arcforge::embedded::utils::LoggerLevel::kinfo);
 	} else {
 		logger.setLevel(arcforge::embedded::utils::LoggerLevel::kdebug);
 	}
 
-	// 2. 配置输出目标 (Sink)
-	logger.ClearSinks();  // 清空默认的控制台输出
-	logger.AddSink(std::make_shared<arcforge::embedded::utils::FileSink>(
-	    "/root/my_app_client.log"));  // 添加一个文件输出
+	// 2. Configure output targets (Sinks)
+	logger.ClearSinks();
+	logger.AddSink(
+	    std::make_shared<arcforge::embedded::utils::FileSink>("/root/my_app_client.log"));
 	logger.AddSink(std::make_shared<arcforge::embedded::utils::ConsoleSink>());
-
-	// // ... 你的其他应用程序代码 ...
-	// logger.Warning("Application has started.");
 
 	//----------------------------------
 
@@ -116,12 +107,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 	// connect to server
 	network_socket::SocketReturnValue retval_flag = client.connectToServer();
 	if (retval_flag > network_socket::SocketReturnValue::ksuccess) {
-		arcforge::embedded::utils::Logger::GetInstance().Error("Client failed to connect to server.",
-		                                                     kcurrent_app_name);
+		arcforge::embedded::utils::Logger::GetInstance().Error(
+		    "Client failed to connect to server.", kcurrent_app_name);
 		exit(1);
 	}
 
-	// --- 2. 打开 WAV 文件 ---
+	// --- 2. Open wav file ---
 	ai_asr::WavReader reader;
 	if (!reader.Open(wav_filepath, ksample_rate, 1 /*expected channels*/)) {
 		std::ostringstream oss;
@@ -141,12 +132,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 	}
 
 	const size_t samples_per_chunk = static_cast<size_t>((ksample_rate * CHUNK_DURATION_MS) / 1000);
-	std::vector<float> audio_chunk;  // 用于存储从WAV读取的样本
+	std::vector<float> audio_chunk;
 
-	// --- 3. 循环处理 ---
+	// --- 3. Processing with conditional loop ---
 	while ((g_stop_signal_received == false) && (reader.Eof() == false)) {
-		// 在每次循环开始时，我们作为调用者，主动准备好一块足够大的内存。
-		//    这确保了无论 ReadSamples 的实现如何，我们提供的缓冲区总是安全的。
+		// At the start of each loop, as the caller, we proactively prepare a sufficiently large memory block.
+		//    This ensures that regardless of how ReadSamples is implemented, the buffer we provide is always safe.
 		audio_chunk.resize(samples_per_chunk);
 
 		size_t samples_read = reader.ReadSamples(audio_chunk, samples_per_chunk);
@@ -155,14 +146,15 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 			{
 				std::ostringstream oss;
 				oss << "main-client.cpp: size of audio_chunk=" << audio_chunk.size();
-				arcforge::embedded::utils::Logger::GetInstance().Debug(oss.str(), kcurrent_app_name);
+				arcforge::embedded::utils::Logger::GetInstance().Debug(oss.str(),
+				                                                       kcurrent_app_name);
 			}
 
-			//【关键步骤】根据实际读取的样本数，精确地截断 vector。
-			//    这保证了我们发送给服务器的数据不多不少，正好是 samples_read 个样本。
-			//    即使 ReadSamples 内部没有 resize，这行代码也能保证正确性。
-			//    即使 ReadSamples 内部已经 resize 了，这行代码也只是做一次无害的重复操作。
-			//    这就是防御性编程：不依赖对方，自己保证正确。
+			// [key step] Precisely truncate the vector according to the actual number of samples read.
+			//    This ensures that the data we send to the server is neither more nor less than samples_read samples.
+			//    Even if ReadSamples does not resize internally, this line of code ensures correctness.
+			//    Even if ReadSamples has already resized internally, this line of code is just a harmless redundant operation.
+			//    This is defensive programming: do not rely on the other party, ensure correctness yourself.
 			if (samples_read < audio_chunk.size()) {
 				audio_chunk.resize(samples_read);
 			}
@@ -186,25 +178,16 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 			}
 			// }
 		}
-
-		// else if (!reader.Eof()) {
-		// 	// ReadSamples返回0但不是EOF，可能只是暂时没数据或很小的读取
-		// 	// 短暂等待，避免忙等
-		// 	std::this_thread::sleep_for(std::chrono::milliseconds(5));  // 短暂等待
-		// 	arcforge::embedded::utils::Logger::GetInstance().Debug("read more wav samples", kcurrent_app_name);
-		// 	continue;  // 重新尝试读取
-		// }
-
 	}  // end of while()
 
 	if (g_stop_signal_received) {
 		arcforge::embedded::utils::Logger::GetInstance().Info("\nProcessing stopped by user.",
-		                                                    kcurrent_app_name);
+		                                                      kcurrent_app_name);
 	} else {
 		arcforge::embedded::utils::Logger::GetInstance().Info(
 		    "\nEnd of WAV file reached in main loop.", kcurrent_app_name);
 		//-----------------------------------------------------
-		// 发送一个空的音频块作为EOF标记
+		// send EOF marker (an empty chunk)
 		std::vector<float> empty_chunk;
 		client.sendFloat(empty_chunk);
 		arcforge::embedded::utils::Logger::GetInstance().Info(

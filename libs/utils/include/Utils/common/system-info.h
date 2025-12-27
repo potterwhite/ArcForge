@@ -28,8 +28,8 @@ namespace embedded {
 namespace utils {
 
 /**
- * @brief 获取库的编译时版本字符串。
- * @return 一个格式为 "major.minor.patch" 的字符串。
+ * @brief Retrieve the library's compile-time version string.
+ * @return A string in the format "major.minor.patch".
  */
 std::string get_utils_library_version();
 

@@ -40,8 +40,6 @@ class ClientBase : public Base {
 	ClientBase(ClientBase&&) noexcept = default;
 	ClientBase& operator=(ClientBase&&) noexcept = default;
 
-	// // 核心功能
-	// SocketReturnValue connectToServer();  // 连接到服务器
 };
 
 }  // namespace network_socket

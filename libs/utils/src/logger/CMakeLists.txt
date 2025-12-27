@@ -26,13 +26,6 @@ add_subdirectory(worker)
 
 set(LOGGER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/logger.cpp")
 
-#[[
-# 上报给父级
-set(LIB_SOURCES
-    ${LIB_SOURCES} ${LOGGER_SOURCES}
-    PARENT_SCOPE)
-]]
-
 target_sources(${PROJECT_NAME}
     PRIVATE
         ${LOGGER_SOURCES}

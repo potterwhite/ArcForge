@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v0.5.1] - 2025-12-27
+
+### 🧹 Refactor & Style (重构与规范)
+* **Global Internationalization**: Completed a full pass over the codebase to translate all non-English comments (Chinese) into English. This covers:
+    * `apps/`
+    * `libs/asr_engine`
+    * `libs/network`
+    * `libs/utils`
+    * `third_party/`
+* **Code Cleanup**: Removed deprecated legacy logger files (`logger-old.c`, `logger-old.h`) from `libs/utils` to reduce technical debt.
+
+### 👥 Contributors
+* @PotterWhite
+
 ## [v0.5.0] - 2025-12-27
 
 **RK3588s Platform Support & NPU Integration**
@@ -105,4 +119,6 @@ This release represents the consolidation of the entire ArcForge development his
 [0.4.0]: https://github.com/potterwhite/ArcForge/tags/v0.4.0
 
 [0.5.0]: https://github.com/potterwhite/ArcForge/tags/v0.5.0
+
+[0.5.1]: https://github.com/potterwhite/ArcForge/tags/v0.5.1
 

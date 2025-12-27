@@ -22,20 +22,20 @@
 
 #pragma once
 
-#include "ASREngine/recognizer/recognizer-config.h"  // 你的干净配置
-#include "ASREngine/pch.h"
 #include "ASREngine/common/common-types.h"
+#include "ASREngine/pch.h"
+#include "ASREngine/recognizer/recognizer-config.h"
 
 // #include <memory>
-// #include <string>  // 确保 string/vector/memory 这些公共接口用到的被包含
+// #include <string>
 // #include <vector>
 
 namespace arcforge {
 namespace embedded {
 namespace ai_asr {
 
-// 向前声明 PIMPL 实现类
-class RecognizerImpl;  // <--- 关键
+// forward declaration of the PIMPL implementation class
+class RecognizerImpl;
 
 class Recognizer {
    public:

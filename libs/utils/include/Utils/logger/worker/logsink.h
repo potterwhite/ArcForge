@@ -23,18 +23,18 @@
 #pragma once
 
 #include "Utils/pch.h"
-#include "log_entry.h"  // 包含 LogEntry 定义
+#include "log_entry.h"
 
 namespace arcforge {
 namespace embedded {
 namespace utils {
 
-// LogSink 抽象基类，定义所有 Sink 的统一接口
+// logsink abstract base class defining a common interface for all sinks
 class LogSink {
    public:
 	virtual ~LogSink() = default;
 
-	// 所有 Sink 必须实现此方法，以处理日志条目
+	// all sink must implement this method to handle log entries
 	virtual void log(const LogEntry& entry) = 0;
 };
 

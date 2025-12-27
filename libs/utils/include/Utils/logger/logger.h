@@ -29,7 +29,6 @@ namespace arcforge {
 namespace embedded {
 namespace utils {
 
-// 日志级别定义
 enum class LoggerLevel {
 	kdebug = 0x10,
 	kinfo = 0x11,
@@ -44,21 +43,21 @@ class Logger {
 
 	~Logger();
 
-	// 删除拷贝和移动语义
+	// delete copy and move semantics
 	Logger(const Logger&) = delete;
 	Logger& operator=(const Logger&) = delete;
 	Logger(Logger&&) = delete;
 	Logger& operator=(Logger&&) = delete;
 
 	// ----------------------------------------------
-	// 配置接口
+	// Config Interface
 	// ----------------------------------------------
 	void setLevel(LoggerLevel lv);
 	void AddSink(std::shared_ptr<LogSink> sink);
 	void ClearSinks();
 
 	// ----------------------------------------------
-	// 日志记录核心接口
+	// Log control interface
 	// ----------------------------------------------
 	void Log(LoggerLevel level, const std::string& message, std::string_view tag = {});
 	void BatchLog(LoggerLevel level, const std::vector<std::string>& messages,
@@ -67,10 +66,9 @@ class Logger {
 	                  std::string_view tag = {});
 
 	// ----------------------------------------------
-	// 便捷的日志记录方法
+	// Convenient logging levels
 	// ----------------------------------------------
-	void Info(const std::string& message,
-	          std::string_view tag = {});  // 推荐使用更明确的 Info 而不是 Log
+	void Info(const std::string& message, std::string_view tag = {});
 	void Debug(const std::string& message, std::string_view tag = {});
 	void Warning(const std::string& message, std::string_view tag = {});
 	void Error(const std::string& message, std::string_view tag = {});

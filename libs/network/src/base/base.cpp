@@ -18,46 +18,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// 文件: base/base.cpp
-#include "Network/base/base.h"            // 包含你更新后的公共头文件 (base.h)
-#include "Network/base/impl/base-impl.h"  // 包含PIMPL实现类的头文件 (注意路径)
-
-// !! 不再需要在这里包含 <sherpa-onnx/...> 的头文件
-// !! 也不再需要 using namespace sherpa_onnx::cxx;
+// libs/network/src/base/base.cpp
+#include "Network/base/base.h"
+#include "Network/base/impl/base-impl.h"
 
 namespace arcforge {
 namespace embedded {
 namespace network_socket {
 
-// 构造函数: 创建 PIMPL 对象
-Base::Base() : impl_(std::make_unique<BaseImpl>()) {
-	// 原来的 cout "Base object constructed..." 应该移到 BaseImpl 的构造函数中
-	// 或者如果你希望接口层也有日志，可以保留，但通常 Impl 构造时打日志更合适
-}
+Base::Base() : impl_(std::make_unique<BaseImpl>()) {}
 
 Base::Base(std::unique_ptr<BaseImpl> param_impl) : impl_(std::move(param_impl)) {}
 
-// 析构函数: 默认实现即可，std::unique_ptr 会自动处理 impl_ 的销毁
-// 重要的是这个定义要放在 .cpp 文件中，这样编译器在销毁 impl_ 时能看到 BaseImpl 的完整定义
-Base::~Base() {
-	// 原来的 cout "Base cleaned up..." 应该移到 BaseImpl 的析构函数中
-}
+Base::~Base() {}
 
-// 移动构造函数 (通常对于 PIMPL 是需要的)
-// Base::Base(Base&& other) noexcept : impl_(std::move(other.impl_)) {
-// 	// 移动构造函数应该保证noexcept，去掉抛出异常的代码
-// 	// impl_的移动已经在初始化列表中完成
-// }
 Base::Base(Base&& other) noexcept = default;
 
-// 移动赋值运算符 (通常对于 PIMPL 是需要的)
-//     Base& Base::operator=(Base&& other) noexcept {
-// 	if (this != &other) {
-// 		impl_ = std::move(other.impl_);
-// 		// std::cout << "Base move assigned." << std::endl;
-// 	}
-// 	return *this;
-// }
 Base& Base::operator=(Base&& other) noexcept = default;
 
 SocketStatus Base::isSocketFDValid() const {

@@ -28,8 +28,8 @@ namespace embedded {
 namespace asr {
 
 /**
- * @brief 获取 ASR 库的编译时版本字符串。
- * @return 一个格式为 "major.minor.patch" 的字符串。
+ * @brief Obtain ASR library version string.
+ * @return A string in the format "major.minor.patch".
  */
 std::string get_asr_library_version();
 

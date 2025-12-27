@@ -27,14 +27,6 @@ set(WORKER_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/filesink.cpp"
 )
 
-#[[
-# 上报给父级
-set(LIB_SOURCES
-    ${LIB_SOURCES} ${WORKER_SOURCES}
-    PARENT_SCOPE
-)
-]]
-
 target_sources(${PROJECT_NAME}
     PRIVATE
         ${WORKER_SOURCES}

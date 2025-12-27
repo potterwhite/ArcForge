@@ -22,14 +22,10 @@
 # src/common/CMakeLists.txt
 #
 
-# 列出这个模块的源文件 (如果有 .cpp 文件)
 set(COMMON_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/common-types.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/system-info.cpp"
 )
-
-# 将源文件列表设置到父作用域，以便顶层 CMakeLists.txt 可以使用它
-#set(LIB_SOURCES ${LIB_SOURCES} ${COMMON_SOURCES} PARENT_SCOPE)
 
 target_sources(${PROJECT_NAME}
     PRIVATE

@@ -18,35 +18,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// 关键：包含由 CMake 在第 3 步生成的头文件
+// IMPORTANT: Import from CMakeLists.txt externally
 #include "system-info.h"
 
 namespace arcforge {
 namespace embedded {
 namespace asr {
 
-// 定义一个全局常量，以确保版本字符串被编译进二进制文件，
-// 这样 'strings' 命令就能找到它。
-// const char* g_internal_version_string_for_binary_scan = VERSION_STRING;
-
-// 实现公共接口函数
 std::string get_asr_library_version() {
-	// 使用 CMake 生成的宏返回版本字符串
+
 	return VERSION_STRING;
 }
 
 std::string get_asr_library_author() {
-	// 使用 CMake 生成的宏返回版本字符串
+
 	return AUTHOR_NAME;
 }
 
 std::string get_asr_library_author_email() {
-	// 使用 CMake 生成的宏返回版本字符串
+
 	return AUTHOR_EMAIL;
 }
 
 std::string get_asr_library_build_timestamp() {
-	// 使用 CMake 生成的宏返回版本字符串
+
 	return BUILD_TIMESTAMP;
 }
 }  // namespace asr

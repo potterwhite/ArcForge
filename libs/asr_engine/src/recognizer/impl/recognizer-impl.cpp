@@ -18,45 +18,37 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// 文件: recognizer/impl/recognizer-impl.cpp
+// libs/asr_engine/src/recognizer/impl/recognizer-impl.cpp
 #include "ASREngine/recognizer/impl/recognizer-impl.h"
 #include "Utils/logger/logger.h"
 
-// 在这里包含所有必需的 sherpa-onnx 头文件
-#include "sherpa-onnx/c-api/cxx-api.h"  // 使用C++ API
-
-// 如果 recognizer-config.h 不在默认的 include 路径，也需要正确包含
-// #include "recognizer/recognizer-config.h" (如果上一层CMakeLists.txt已添加src为include目录则可能不需要)
+#include "sherpa-onnx/c-api/cxx-api.h"
 
 namespace arcforge {
 namespace embedded {
 namespace ai_asr {
 
-using namespace sherpa_onnx::cxx;  // 可以方便地使用 OnlineRecognizer 等
+using namespace sherpa_onnx::cxx;
 
 RecognizerImpl::RecognizerImpl() {
 	arcforge::embedded::utils::Logger::GetInstance().Info("RecognizerImpl object constructed.",
-	                                                     kcurrent_lib_name);
-	// expected_sample_rate_ 已经在头文件中给了默认值
+	                                                      kcurrent_lib_name);
 }
 
-// 析构函数的定义需要在这里，因为 unique_ptr<OnlineRecognizer> 等需要完整类型
 RecognizerImpl::~RecognizerImpl() {
 	// std::ostringstream oss;
 	// oss << "RecognizerImpl cleaned up.";
 
 	arcforge::embedded::utils::Logger::GetInstance().Info("RecognizerImpl cleaned up.",
-	                                                     kcurrent_lib_name);
+	                                                      kcurrent_lib_name);
 }
 
-// 移动构造
 RecognizerImpl::RecognizerImpl(RecognizerImpl&& other) noexcept
     : recognizer_ptr_(std::move(other.recognizer_ptr_)),
       stream_ptr_(std::move(other.stream_ptr_)),
       last_displayed_text_(std::move(other.last_displayed_text_)),
       expected_sample_rate_(other.expected_sample_rate_) {}
 
-// 移动赋值
 RecognizerImpl& RecognizerImpl::operator=(RecognizerImpl&& other) noexcept {
 	if (this != &other) {
 		recognizer_ptr_ = std::move(other.recognizer_ptr_);
@@ -68,14 +60,8 @@ RecognizerImpl& RecognizerImpl::operator=(RecognizerImpl&& other) noexcept {
 }
 
 bool RecognizerImpl::Initialize(const SherpaConfig& sherpa_config) {
-	OnlineRecognizerConfig config;  // 这是 sherpa_onnx::cxx::OnlineRecognizerConfig
+	OnlineRecognizerConfig config;
 
-	// 从你的 SherpaConfig 映射到 sherpa_onnx::OnlineRecognizerConfig
-	// 注意：sherpa-onnx 的 OnlineRecognizer::Create 接收的是 OnlineRecognizerConfig
-	// 而不是 OnlineRecognizer 对象本身。所以之前的 make_unique<OnlineRecognizer>(OnlineRecognizer::Create(config))
-	// 可能需要调整为直接创建 OnlineRecognizer。
-
-	// 我将基于你 Recognizer::Initialize 中的逻辑来填充 config
 	config.model_config.transducer.encoder = sherpa_config.getFirstEncoderPath();
 	config.model_config.transducer.decoder = sherpa_config.getSecondDecoderPath();
 	config.model_config.transducer.joiner = sherpa_config.getThirdJoinerPath();
@@ -89,9 +75,7 @@ bool RecognizerImpl::Initialize(const SherpaConfig& sherpa_config) {
 		config.model_config.debug = false;
 	}
 
-	// 这里假设你的 SherpaConfig 有一个方法获取期望的采样率，或者它被硬编码
-	// 我们已经在成员中初始化了 expected_sample_rate_，可以用它或从配置中覆盖
-	config.feat_config.sample_rate = expected_sample_rate_;  // 或者从 sherpa_config 获取
+	config.feat_config.sample_rate = expected_sample_rate_;
 
 	config.rule1_min_trailing_silence = sherpa_config.getSeventhRule1MinTrailingSilence();
 	config.rule2_min_trailing_silence = sherpa_config.getEighthRule2MinTrailingSilence();
@@ -113,7 +97,6 @@ bool RecognizerImpl::Initialize(const SherpaConfig& sherpa_config) {
 		 *********************************************************/
 		recognizer_ptr_ = std::make_unique<OnlineRecognizer>(OnlineRecognizer::Create(config));
 
-		// 检查 reset 后是否有效
 		if (recognizer_ptr_->Get() == nullptr) {
 			// std::cerr << "Failed to create OnlineRecognizer (internal pointer is null).";
 			arcforge::embedded::utils::Logger::GetInstance().Error(
@@ -136,14 +119,14 @@ bool RecognizerImpl::Initialize(const SherpaConfig& sherpa_config) {
 			arcforge::embedded::utils::Logger::GetInstance().Error(
 			    "Failed to create OnlineStream (internal pointer is null).", kcurrent_lib_name);
 
-			recognizer_ptr_.reset();  // 清理已创建的 recognizer
+			recognizer_ptr_.reset();
 			stream_ptr_.reset();
 
 			return false;
 		}
 
 		arcforge::embedded::utils::Logger::GetInstance().Info("Sherpa-ONNX Stream (Impl) created.",
-		                                                     kcurrent_lib_name);
+		                                                      kcurrent_lib_name);
 
 	} catch (const std::exception& e) {
 		std::ostringstream oss_catch;
@@ -159,7 +142,7 @@ bool RecognizerImpl::Initialize(const SherpaConfig& sherpa_config) {
 void RecognizerImpl::ProcessAudioChunk(const std::vector<float>& audio_chunk) {
 	if (!stream_ptr_ || !recognizer_ptr_) {
 		arcforge::embedded::utils::Logger::GetInstance().Error("ASR (Impl) not initialized.",
-		                                                      kcurrent_lib_name);
+		                                                       kcurrent_lib_name);
 		return;
 	}
 	if (audio_chunk.empty()) {
@@ -178,7 +161,7 @@ void RecognizerImpl::ProcessAudioChunk(const std::vector<float>& audio_chunk) {
 }
 
 void RecognizerImpl::InputFinished() {
-	if (stream_ptr_ && recognizer_ptr_) {  // 检查recognizer_ptr_也很有用
+	if (stream_ptr_ && recognizer_ptr_) {
 		stream_ptr_->InputFinished();
 		while (recognizer_ptr_->IsReady(stream_ptr_.get())) {
 			recognizer_ptr_->Decode(stream_ptr_.get());
@@ -209,9 +192,9 @@ bool RecognizerImpl::IsEndpoint() const {
 
 void RecognizerImpl::ResetStream() {
 	if (recognizer_ptr_ && stream_ptr_) {
-		// 使用 sherpa-onnx 提供的 Reset 方法重置流，效率更高
+
 		recognizer_ptr_->Reset(stream_ptr_.get());
-		last_displayed_text_.clear();  // 清空上一句话的结果
+		last_displayed_text_.clear();
 
 		arcforge::embedded::utils::Logger::GetInstance().Info(
 		    "[ASR Stream Reset (Impl) for new utterance]", kcurrent_lib_name);
@@ -220,7 +203,6 @@ void RecognizerImpl::ResetStream() {
 		arcforge::embedded::utils::Logger::GetInstance().Error(
 		    "Cannot reset stream, recognizer or stream not initialized.", kcurrent_lib_name);
 	}
-
 }
 
 int RecognizerImpl::GetExpectedSampleRate() const {

@@ -27,24 +27,6 @@ set(RECOGNIZER_SOURCES
 	"${CMAKE_CURRENT_SOURCE_DIR}/recognizer-config.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/impl/recognizer-impl.cpp")
 
-#[[
-set(RECOGNIZER_PUBLIC_HEADERS "${INCLUDE_DIR}/ASR/recognizer/recognizer.h"
-							  "${INCLUDE_DIR}/ASR/recognizer/recognizer-config.h")
-
-# 上报给父级
-set(LIB_SOURCES
-	${LIB_SOURCES} ${RECOGNIZER_SOURCES}
-	PARENT_SCOPE)
-set(LIB_PUBLIC_HEADERS
-	${LIB_PUBLIC_HEADERS} ${RECOGNIZER_PUBLIC_HEADERS}
-	PARENT_SCOPE)
-
-install(FILES ${RECOGNIZER_PUBLIC_HEADERS} DESTINATION include/${PROJECT_NAME}/recognizer)
-# 如果 该 模块有特定的包含目录或编译定义，可以在这里设置给一个目标属性变量 target_include_directories( ${PARENT_LIBRARY_TARGET} PRIVATE
-# some_vad_internal_include ) 但通常是父级聚合后统一设置给最终的库目标。 或者更简单地，父级通过
-# $<TARGET_PROPERTY:tgt,INTERFACE_INCLUDE_DIRECTORIES> 来收集。 对于简单的源文件聚合，直接上报列表更常见。
-]]
-
 target_sources(${PROJECT_NAME}
     PRIVATE
         ${RECOGNIZER_SOURCES}

@@ -20,7 +20,7 @@
 
 name: License Header Check
 
-# 触发机制：Push 到主干，或者提交 Pull Request 时触发
+# trigger mechanism: on push to main branch or on pull request
 on:
   push:
     branches: [ "main", "master" ]
@@ -45,15 +45,15 @@ jobs:
       - name: Run License Check
         run: |
           echo "🔍 Checking for license headers..."
-          # 关键命令：
-          # -check: 只检查不修改，有问题返回非0
-          # -ignore: 必须和本地脚本保持一致，忽略 third_party
-          # 注意：这里不需要指定 -c Owner 或 -l License，因为 -check 只看"有没有"头注释，不严格比对内容
-          
-          if ! addlicense -check -ignore "third_party/**" -ignore ".git/**" .; then
+          # Key command:
+          # -check: only check, do not modify, return non-zero if issues found
+          # -ignore: must be consistent with the local script, ignore .git
+          # Note: No need to specify -c Owner or -l License, because -check only checks for presence of headers, not their exact content
+
+          if ! addlicense -check -ignore ".git/**" .; then
             echo "❌ FAILED: Some files are missing license headers."
-            echo "👉 Please run './scripts/universal_copyright_v3.1.sh' locally to fix it."
+            echo "👉 Please run 'add_copyright.sh' locally to fix it."
             exit 1
           fi
-          
+
           echo "✅ SUCCESS: All files have license headers."

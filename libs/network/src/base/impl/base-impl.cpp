@@ -18,15 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// 文件: base/impl/base-impl.cpp
+// libs/network/src/base/impl/base-impl.cpp
 #include "Network/base/impl/base-impl.h"
 #include "Utils/logger/logger.h"
-
-// 在这里包含所有必需的 sherpa-onnx 头文件
-// #include "sherpa-onnx/c-api/cxx-api.h"  // 使用C++ API
-
-// 如果 base-config.h 不在默认的 include 路径，也需要正确包含
-// #include "base/base-config.h" (如果上一层CMakeLists.txt已添加src为include目录则可能不需要)
 
 namespace arcforge {
 namespace embedded {
@@ -41,14 +35,14 @@ BaseImpl::BaseImpl()
       socket_mutex_(std::make_unique<std::mutex>()),
       log_mutex_(std::make_unique<std::mutex>()) {
 	arcforge::embedded::utils::Logger::GetInstance().Info("BaseImpl object constructed.",
-	                                                    kcurrent_lib_name);
+	                                                      kcurrent_lib_name);
 }
 
-// 析构函数的定义需要在这里，因为 unique_ptr<OnlineBase> 等需要完整类型
 BaseImpl::~BaseImpl() {
 	// socketfd_ = -1;
 	closeSocket_safe();
-	arcforge::embedded::utils::Logger::GetInstance().Info("BaseImpl cleaned up.", kcurrent_lib_name);
+	arcforge::embedded::utils::Logger::GetInstance().Info("BaseImpl cleaned up.",
+	                                                      kcurrent_lib_name);
 }
 
 /*===================================================
@@ -82,7 +76,7 @@ void BaseImpl::closeSocket() {
 	} else {
 		// log_error("socketfd is invalid, alert!!");
 		arcforge::embedded::utils::Logger::GetInstance().Error("socketfd is invalid, alert!!",
-		                                                     kcurrent_lib_name);
+		                                                       kcurrent_lib_name);
 	}
 }
 
@@ -106,8 +100,8 @@ void BaseImpl::setFD(int fd) {
 
 	// socketfd_ = fd;
 	//-----------------------------------------------
-	// 如果已经持有一个有效的fd，先关闭它
-	if (socketfd_ >= 0) {  // 或者使用 isSocketFDValid_safe()
+	// if we have a valid existing fd, close it first
+	if (socketfd_ >= 0) {
 
 		arcforge::embedded::utils::Logger::GetInstance().Info(
 		    "BaseImpl::setFD - Closing existing socket FD: " + std::to_string(socketfd_),
@@ -122,7 +116,6 @@ void BaseImpl::setFD(int fd) {
 	} else {
 		arcforge::embedded::utils::Logger::GetInstance().Info(
 		    "BaseImpl::setFD - FD set to invalid value: " + std::to_string(fd), kcurrent_lib_name);
-
 	}
 }
 
@@ -154,37 +147,7 @@ void BaseImpl::setSocketPath(const std::string& path) {
 	socketpath_ = path;
 }
 
-/*===================================================
- * rx & tx functions
- *===================================================*/
-// --- sendFloat_safe (简化版) ---
-// SocketReturnValue BaseImpl::sendFloat_safe(const std::vector<float>& data) {
-// 	std::lock_guard<std::mutex> lock(*(socket_mutex_.get()));
-
-// 	// 1. fd validation verification
-// 	if (socketfd_ < 0) {
-// 		return SocketReturnValue::kfd_illegal;
-// 	}
-
-// 	uint32_t count = static_cast<uint32_t>(data.size());
-
-// 	if (::send(socketfd_, &count, sizeof(count), 0) != sizeof(count)) {
-// 		arcforge::embedded::utils::Logger::GetInstance().Info("sendFloat_safe: Failed to send count.");
-// 		return SocketReturnValue::ksendcount_failed;
-// 	}
-
-// 	if (count > 0) {
-// 		size_t bytes_to_send = count * sizeof(float);
-// 		if (::send(socketfd_, data.data(), bytes_to_send, 0) !=
-// 		    static_cast<ssize_t>(bytes_to_send)) {
-// 			arcforge::embedded::utils::Logger::GetInstance().Info("sendFloat_safe: Failed to send data.");
-// 			return SocketReturnValue::ksenddata_failed;
-// 		}
-// 	}
-// 	arcforge::embedded::utils::Logger::GetInstance().Info("sendFloat_safe: Sent " + std::to_string(count) + " floats.");
-// 	return SocketReturnValue::ksuccess;
-// }
-// --- sendFloat_safe (修正版) ---
+// --- sendFloat_safe ---
 SocketReturnValue BaseImpl::sendFloat_safe(const std::vector<float>& data) {
 	std::lock_guard<std::mutex> lock(*(socket_mutex_.get()));
 
@@ -194,7 +157,7 @@ SocketReturnValue BaseImpl::sendFloat_safe(const std::vector<float>& data) {
 
 	uint32_t count = static_cast<uint32_t>(data.size());
 
-	// 发送长度头
+	// transmit the length header
 	if (::send(socketfd_, &count, sizeof(count), 0) != sizeof(count)) {
 		// arcforge::embedded::utils::Logger::GetInstance().Info("sendFloat_safe: Failed to send count. errno: " + std::to_string(errno));
 		arcforge::embedded::utils::Logger::GetInstance().Error(
@@ -203,7 +166,7 @@ SocketReturnValue BaseImpl::sendFloat_safe(const std::vector<float>& data) {
 		return SocketReturnValue::ksendcount_failed;
 	}
 
-	// 发送数据体 (使用循环)
+	// transmit the data body (using a loop)
 	if (count > 0) {
 		size_t bytes_to_send = count * sizeof(float);
 		size_t bytes_has_sent = 0;
@@ -230,7 +193,7 @@ SocketReturnValue BaseImpl::sendFloat_safe(const std::vector<float>& data) {
 	return SocketReturnValue::ksuccess;
 }
 
-// --- receiveFloat_safe (简化版) ---
+// --- receiveFloat_safe  ---
 SocketReturnValue BaseImpl::receiveFloat_safe(std::vector<float>& data) {
 	std::lock_guard<std::mutex> lock(*(socket_mutex_.get()));
 
@@ -283,8 +246,8 @@ SocketReturnValue BaseImpl::receiveFloat_safe(std::vector<float>& data) {
 	// arcforge::embedded::utils::Logger::GetInstance().Info(temp_str.str());
 	arcforge::embedded::utils::Logger::GetInstance().Info(temp_str.str(), kcurrent_lib_name);
 
-	// 4. 可选：对 count 进行合理性检查
-	const uint32_t MAX_ALLOWED_FLOATS = 1024 * 1024;  // 示例：最大允许约1M个float (4MB)
+	// 4. optional: sanity check on count
+	const uint32_t MAX_ALLOWED_FLOATS = 1024 * 1024;
 	if (count > MAX_ALLOWED_FLOATS) {
 		// arcforge::embedded::utils::Logger::GetInstance().Info("receiveFloat_safe: Received count (" + std::to_string(count) +
 		//     ") exceeds MAX_ALLOWED_FLOATS (" + std::to_string(MAX_ALLOWED_FLOATS) + "). Aborting.");
@@ -293,17 +256,15 @@ SocketReturnValue BaseImpl::receiveFloat_safe(std::vector<float>& data) {
 		        ") exceeds MAX_ALLOWED_FLOATS (" + std::to_string(MAX_ALLOWED_FLOATS) +
 		        "). Aborting.",
 		    kcurrent_lib_name);
-		// 客户端可能发送了一个无效的超大count，这可能是协议错误或攻击
-		// 服务器可以选择关闭连接或返回特定错误
-		// close(socketfd_); // 考虑是否要主动关闭
-		return SocketReturnValue::kcount_too_large;  // 需要定义这个错误码
+
+		return SocketReturnValue::kcount_too_large;
 	}
 	if (count == 0) {
 		// end of file, empty block
 		// arcforge::embedded::utils::Logger::GetInstance().Info("receiveFloat_safe: Received EOF marker (empty chunk)");
 		arcforge::embedded::utils::Logger::GetInstance().Warning(
 		    "receiveFloat_safe: Received EOF marker (empty chunk)", kcurrent_lib_name);
-		return SocketReturnValue::keof;  // 添加新的状态码
+		return SocketReturnValue::keof;
 	}
 
 	// 5. receive data
@@ -342,7 +303,7 @@ SocketReturnValue BaseImpl::receiveFloat_safe(std::vector<float>& data) {
 	return SocketReturnValue::ksuccess;
 }
 
-// // --- sendString_safe (简化版) ---
+// // --- sendString_safe  ---
 // SocketReturnValue BaseImpl::sendString_safe(const std::string& message) {
 // 	std::lock_guard<std::mutex> lock(*(socket_mutex_.get()));
 
@@ -369,7 +330,7 @@ SocketReturnValue BaseImpl::receiveFloat_safe(std::vector<float>& data) {
 // 	arcforge::embedded::utils::Logger::GetInstance().Info("sendString_safe: Sent string of length " + std::to_string(len) + ".");
 // 	return SocketReturnValue::ksuccess;
 // }
-// --- sendString_safe (修正版) ---
+// --- sendString_safe  ---
 SocketReturnValue BaseImpl::sendString_safe(const std::string& message) {
 	std::lock_guard<std::mutex> lock(*(socket_mutex_.get()));
 
@@ -378,7 +339,7 @@ SocketReturnValue BaseImpl::sendString_safe(const std::string& message) {
 	}
 
 	uint32_t len = static_cast<uint32_t>(message.length());
-	// 发送长度头
+
 	if (::send(socketfd_, &len, sizeof(len), 0) != sizeof(len)) {
 		arcforge::embedded::utils::Logger::GetInstance().Info(
 		    "sendString_safe: Failed to send length. errno: " + std::to_string(errno),
@@ -386,7 +347,6 @@ SocketReturnValue BaseImpl::sendString_safe(const std::string& message) {
 		return SocketReturnValue::ksendlength_failed;
 	}
 
-	// 发送数据体 (使用循环)
 	if (len > 0) {
 		size_t bytes_to_send = len;
 		size_t bytes_has_sent = 0;
@@ -410,7 +370,7 @@ SocketReturnValue BaseImpl::sendString_safe(const std::string& message) {
 	return SocketReturnValue::ksuccess;
 }
 
-// --- receiveString_safe (简化版) ---
+// --- receiveString_safe  ---
 SocketReturnValue BaseImpl::receiveString_safe(std::string& message) {
 	std::lock_guard<std::mutex> lock(*(socket_mutex_.get()));
 
@@ -429,7 +389,7 @@ SocketReturnValue BaseImpl::receiveString_safe(std::string& message) {
 		arcforge::embedded::utils::Logger::GetInstance().Info(
 		    "receiveString_safe: Peer closed connection while trying to receive length.",
 		    kcurrent_lib_name);
-		return SocketReturnValue::kpeer_abnormally_closed;  // 对端优雅关闭也视为异常
+		return SocketReturnValue::kpeer_abnormally_closed;
 	}
 	if (len_recv_bytes < 0) {
 		arcforge::embedded::utils::Logger::GetInstance().Info(
@@ -463,8 +423,7 @@ SocketReturnValue BaseImpl::receiveString_safe(std::string& message) {
 
 	// 5. if has content, receive message body ifself
 	if (len > 0) {
-		// 合理性检查
-		const uint32_t MAX_ALLOWED_CHARS = 1024 * 1024;  // 示例: 最大1M字符
+		const uint32_t MAX_ALLOWED_CHARS = 1024 * 1024;
 		if (len > MAX_ALLOWED_CHARS) {
 			arcforge::embedded::utils::Logger::GetInstance().Info(
 			    "receiveString_safe: Received length (" + std::to_string(len) +
@@ -524,7 +483,7 @@ SocketReturnValue BaseImpl::receiveString_safe(std::string& message) {
  *===================================================*/
 SocketReturnValue BaseImpl::connectToServer() {
 
-	// 创建Unix域socket
+	// create Unix domain socket
 	int sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (sock_fd < 0) {
 		return SocketReturnValue::kfd_illegal;
@@ -538,13 +497,13 @@ SocketReturnValue BaseImpl::connectToServer() {
 		return SocketReturnValue::ksocketpath_empty;
 	}
 
-	// 设置服务器地址
+	// config server address
 	struct sockaddr_un server_addr;
 	memset(&server_addr, 0, sizeof(server_addr));
 	server_addr.sun_family = AF_UNIX;
 	strncpy(server_addr.sun_path, getSocketPath_safe().c_str(), sizeof(server_addr.sun_path) - 1);
 
-	// 连接到服务器
+	// establish connection to server
 	if (connect(sock_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
 		// perror("Client connect failed");
 		arcforge::embedded::utils::Logger::GetInstance().Error(
@@ -553,8 +512,8 @@ SocketReturnValue BaseImpl::connectToServer() {
 		return SocketReturnValue::kconnect_server_failed;
 	}
 
-	this->setFD_safe(sock_fd);  // <--- 关键: ClientBase (作为Base的子类) 设置其连接FD
-	// TODO: 需要设置sock_fd到Base类
+	this->setFD_safe(sock_fd);
+
 	return SocketReturnValue::ksuccess;
 }
 /*===================================================
@@ -562,7 +521,6 @@ SocketReturnValue BaseImpl::connectToServer() {
  *===================================================*/
 SocketReturnValue BaseImpl::startServer(const size_t& timeout) {
 
-	// 创建Unix域socket
 	int sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (sock_fd < 0) {
 		return SocketReturnValue::kfd_illegal;
@@ -577,16 +535,13 @@ SocketReturnValue BaseImpl::startServer(const size_t& timeout) {
 		return SocketReturnValue::ksocketpath_empty;
 	}
 
-	// 设置socket地址
 	struct sockaddr_un addr;
 	memset(&addr, 0, sizeof(addr));
 	addr.sun_family = AF_UNIX;
 	strncpy(addr.sun_path, getSocketPath_safe().c_str(), sizeof(addr.sun_path) - 1);
 
-	// 如果socket文件已存在,删除它
 	unlink(getSocketPath_safe().c_str());
 
-	// 绑定socket
 	if (bind(sock_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
 		close(sock_fd);
 		return SocketReturnValue::kbind_error;
@@ -622,7 +577,7 @@ SocketReturnValue BaseImpl::startServer(const size_t& timeout) {
 			// i want more standard version that i can get char * string which was edited by posix
 			// perror("setsockopt failed");
 			arcforge::embedded::utils::Logger::GetInstance().Error("setsockopt failed",
-			                                                     kcurrent_lib_name);
+			                                                       kcurrent_lib_name);
 			close(sock_fd);
 			return SocketReturnValue::ksetsocketopt_error;
 		}
@@ -638,19 +593,19 @@ SocketReturnValue BaseImpl::startServer(const size_t& timeout) {
 }
 
 SocketAcceptImplReturn::SocketAcceptImplReturn()
-    : return_value_impl(SocketReturnValue::kinit_state), client_impl(nullptr){};
+    : return_value_impl(SocketReturnValue::kinit_state), client_impl(nullptr) {};
 
 SocketAcceptImplReturn::SocketAcceptImplReturn(SocketReturnValue value,
                                                std::unique_ptr<BaseImpl> client_ptr)
-    : return_value_impl(value), client_impl(std::move(client_ptr)){};
+    : return_value_impl(value), client_impl(std::move(client_ptr)) {};
 
 SocketAcceptImplReturn BaseImpl::acceptClient() {
 
 	struct sockaddr_un client_addr;
 	socklen_t client_len = sizeof(client_addr);
 
-	int listening_fd = this->getFD_safe();  // <--- ServerBase 的监听FD
-	if (listening_fd < 0) {  // 或者 if (this->isSocketFDValid_safe() != SocketStatus::kvalid)
+	int listening_fd = this->getFD_safe();
+	if (listening_fd < 0) {
 		// perror("Server accept: Invalid listening FD for server");
 		arcforge::embedded::utils::Logger::GetInstance().Info(
 		    std::string("Server accept: Invalid listening FD for server") + strerror(errno),
@@ -661,7 +616,7 @@ SocketAcceptImplReturn BaseImpl::acceptClient() {
 		return sreturn;
 	}
 
-	// 接受客户端连接
+	// accept the connection from client
 	int client_fd = ::accept(listening_fd, (struct sockaddr*)&client_addr, &client_len);
 	if (client_fd < 0) {
 		if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -680,12 +635,8 @@ SocketAcceptImplReturn BaseImpl::acceptClient() {
 		// return SocketReturnValue::kfd_illegal;
 	}
 
-	// 创建新的Base对象管理客户端连接
-	// auto client = std::make_unique<Base>();
-	auto client_connection = std::make_unique<BaseImpl>();  // 创建一个新的Base对象代表客户端连接
-	client_connection->setFD_safe(client_fd);  // <--- 关键: 为这个新连接设置FD
-
-	// TODO: 设置client_fd到Base对象
+	auto client_connection = std::make_unique<BaseImpl>();
+	client_connection->setFD_safe(client_fd);
 
 	return {SocketReturnValue::ksuccess, std::move(client_connection)};
 	// return SocketReturnValue::ksuccess;
@@ -718,51 +669,6 @@ SocketReturnValue BaseImpl::unlinkSocketPath() {
 
 	return SocketReturnValue::ksuccess;
 }
-
-// /*===================================================
-//  * log utils
-//  *===================================================*/
-// // using namespace sherpa_onnx::cxx;  // 可以方便地使用 OnlineBase 等
-// void BaseImpl::arcforge::embedded::utils::Logger::GetInstance().Info(const std::string& msg) {
-// #ifdef DEBUG
-// 	std::cout << "LibArcForge_Network: " << msg << std::endl;
-// #endif
-// }
-
-// void BaseImpl::arcforge::embedded::utils::Logger::GetInstance().Warning(const std::string& msg) {
-// 	std::cerr << "LibArcForge_Network Warning: " << msg << std::endl;
-// }
-
-// void BaseImpl::log_error(const std::string& msg) {
-// 	std::cerr << "LibArcForge_Network Error: " << msg << std::endl;
-// }
-
-// void BaseImpl::log_alert(const std::string& msg) {
-// 	std::cerr << "LibArcForge_Network Alert: " << msg << std::endl;
-// }
-
-// // using namespace sherpa_onnx::cxx;  // 可以方便地使用 OnlineBase 等
-// void BaseImpl::log_safe(const std::string& msg) {
-// #ifdef DEBUG
-// 	std::lock_guard<std::mutex> lock(*(log_mutex_.get()));
-// 	arcforge::embedded::utils::Logger::GetInstance().Info(msg);
-// #endif
-// }
-
-// void BaseImpl::log_warning_safe(const std::string& msg) {
-// 	std::lock_guard<std::mutex> lock(*(log_mutex_.get()));
-// 	arcforge::embedded::utils::Logger::GetInstance().Warning(msg);
-// }
-
-// void BaseImpl::log_error_safe(const std::string& msg) {
-// 	std::lock_guard<std::mutex> lock(*(log_mutex_.get()));
-// 	log_error(msg);
-// }
-
-// void BaseImpl::log_alert_safe(const std::string& msg) {
-// 	std::lock_guard<std::mutex> lock(*(log_mutex_.get()));
-// 	log_alert(msg);
-// }
 
 }  // namespace network_socket
 }  // namespace embedded

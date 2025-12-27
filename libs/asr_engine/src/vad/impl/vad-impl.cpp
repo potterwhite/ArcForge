@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "sherpa-onnx/c-api/cxx-api.h"  // 使用C++ API
+#include "sherpa-onnx/c-api/cxx-api.h"
 #include "vad.h"
 
 namespace arcforge {
