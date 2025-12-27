@@ -28,7 +28,7 @@ ArcForge 是一个专为**边缘计算**设计的 C++ ASR 推理框架。
 
 不仅提供源码，还提供了一套**完全可视化**的构建系统。
 
-> **🔍 深度阅读**：[**ArcForge 构建系统详解 (BUILD_SYSTEM.md)**](./BUILD_SYSTEM.md)
+> **🔍 深度阅读**：[**ArcForge 构建系统详解 (BUILD_SYSTEM_ZH_CN.md)**](./BUILD_SYSTEM.md)
 > *(点击上方链接，查看构建生命周期、核心函数 DSL 逻辑图及详细依赖拓扑)*
 
 **核心模块概览：**
