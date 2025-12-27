@@ -84,6 +84,7 @@ endif()
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
         ${PROJECT_NAMESPACE}::Utils
+        ${PROJECT_NAMESPACE}::ThirdParty::LibRKNNRT
         ${PROJECT_NAMESPACE}::ThirdParty::SherpaOnnx
 )
 

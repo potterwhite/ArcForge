@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v0.5.0] - 2025-12-27
+
+**RK3588s Platform Support & NPU Integration**
+
+This release expands the framework's capabilities to edge computing by adding official support for the Rockchip RK3588s platform, featuring native NPU acceleration through `librknnrt` integration.
+
+### Added
+- **Platform**: Added `cmake/toolchains/rk3588s.cmake` for cross-compiling to RK3588s (aarch64 Buildroot SDK).
+- **Dependency**: Added `third_party/librknnrt` module to manage Rockchip NPU runtime libraries.
+- **Presets**: Added new dependency mixins in `CMakePresets.json`:
+    - `mixin-deps-librknnrt-2.2.0-linux-aarch64` (Default for current Sherpa-Onnx).
+    - `mixin-deps-librknnrt-2.3.2-linux-aarch64`.
+    - GCC-specific mixins (`gcc11_3_0`, `gcc13_3_0`, `gcc11_4_0`) to ensure ABI compatibility for prebuilt binaries.
+- **Presets**: Added complete build presets for RK3588s (`rk3588s-release`, `rk3588s-debug`, and static variants).
+
+### Changed
+- **Build**: Refactored `third_party/sherpa-onnx/CMakeLists.txt` to depend on and link against `LibRKNNRT` when required.
+- **Build**: Updated `libs/asr_engine` to link `ThirdParty::LibRKNNRT` into the main library interface.
+- **Apps**: Updated default model paths in `apps/asr/server` to point to `sherpa-onnx-rk3588-streaming-zipformer-bilingual-zh-en-2023-02-20` for NPU inference demonstrations.
+
 ## [v0.4.0] - 2025-12-26
 
 **Documentation & Build System Overhaul**
@@ -83,4 +103,6 @@ This release represents the consolidation of the entire ArcForge development his
 [0.3.0]: https://github.com/potterwhite/ArcForge/tags/v0.3.0
 
 [0.4.0]: https://github.com/potterwhite/ArcForge/tags/v0.4.0
+
+[0.5.0]: https://github.com/potterwhite/ArcForge/tags/v0.5.0
 

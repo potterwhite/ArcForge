@@ -20,6 +20,9 @@
 
 # third_party/CMakeLists.txt
 
+# librknnrt should be verified(downloaded) first due to the latter module (sherpa) depend on it
+add_subdirectory(librknnrt)
+
 # 只有当这是 RV1126BP 平台时，才去处理 sherpa-onnx
 # 我们可以利用 Preset 里传进来的 toolchain 变量，或者自定义变量
 # 但目前最简单的是直接加，因为我们在 sherpa 内部有检查 URL 变量的逻辑
