@@ -226,9 +226,9 @@ To simplify `CMakeLists.txt` writing, the project encapsulates `cmake/ArcFunctio
 <!-- Please paste the Mermaid code for [Figure 2: ArcFunctions Core Logic (The Arc Magic)] here -->
 <!-- Suggest using graph LR layout, ensuring Init/Setup/Install/Test clusters are included -->
 ```mermaid
-graph LR
+graph TB
     %% ==========================================
-    %% Styles Definition (Figure 2 Specific)
+    %% 样式定义 (图2专用)
     %% ==========================================
     classDef fileContainer fill:#263238,stroke:#90a4ae,stroke-width:2px,stroke-dasharray: 5 5,color:#fff;
     classDef initGroup fill:#1565c0,stroke:#90caf9,stroke-width:2px,color:#fff;
@@ -237,110 +237,98 @@ graph LR
     classDef testGroup fill:#c2185b,stroke:#f48fb1,stroke-width:2px,color:#fff;
     classDef nodeStep fill:#455a64,stroke:#cfd8dc,stroke-width:1px,color:#fff;
 
-    %% Phantom links to enforce order 1 -> 2 -> 3 -> 4
-    %% Fixed: Indices updated to 23, 24, 25 based on actual link count
-    linkStyle 23,24,25 stroke-width:0px,fill:none;
-
-    subgraph ArcFunctions_File [ArcFunctions.cmake Toolbox]
+    subgraph ArcFunctions_File [ArcFunctions.cmake 工具箱]
         direction TB
 
         %% ==========================================
-        %% 1. Global Initialization Cluster
+        %% 1. 全局初始化簇
         %% ==========================================
-        subgraph Cluster_Init [1. Global Initialization]
+        subgraph Cluster_Init [1.全局初始化类]
             direction TB
 
             subgraph Func_Ver [arc_extract_version_from_changelog]
                 direction TB
-                V1[Read CHANGELOG.md]:::nodeStep --> V2[Regex Match ## vX.Y.Z]:::nodeStep
-                V2 --> V3[Export ARC_PROJECT_VERSION]:::nodeStep
+                V1[读取 CHANGELOG.md]:::nodeStep --> V2[正则匹配 ## vX.Y.Z]:::nodeStep
+                V2 --> V3[导出 ARC_PROJECT_VERSION]:::nodeStep
             end
 
             subgraph Func_Meta [arc_init_project_metadata]
                 direction TB
-                M1[Get Version Variable]:::nodeStep --> M2[Set Author PotterWhite]:::nodeStep
-                M2 --> M3[Generate UTC Timestamp]:::nodeStep
-                M3 --> M4[Export GLOBAL__Variables]:::nodeStep
+                M1[获取 Version 变量]:::nodeStep --> M2[设置作者 PotterWhite]:::nodeStep
+                M2 --> M3[生成 UTC 时间戳]:::nodeStep
+                M3 --> M4[导出 GLOBAL__变量]:::nodeStep
             end
 
             subgraph Func_Global [arc_init_global_settings]
                 direction TB
-                G1[Create Interface Lib arc_base_settings]:::nodeStep
-                G2[Enforce C++17 & PIC]:::nodeStep --> G1
-                G3[Set -Wall -Werror]:::nodeStep --> G1
-                G4[Set Optimization Level by Type]:::nodeStep --> G1
-                G5[Export BUILD_TYPE]:::nodeStep --> G1
+                G1[创建接口库 arc_base_settings]:::nodeStep
+                G2[强制 C++17 & PIC]:::nodeStep --> G1
+                G3[设置 -Wall -Werror]:::nodeStep --> G1
+                G4[根据 Debug/Release 设优化级]:::nodeStep --> G1
+                G5[导出 BUILD_TYPE]:::nodeStep --> G1
             end
         end
         class Cluster_Init initGroup
 
         %% ==========================================
-        %% 2. Target Configuration Cluster
+        %% 2. 目标配置簇
         %% ==========================================
-        subgraph Cluster_Setup [2. Target Configuration]
+        subgraph Cluster_Setup [2.目标配置类]
             direction TB
 
             subgraph Func_SetupInfo [arc_setup_system_info]
                 direction TB
-                S1[Validate Namespace]:::nodeStep --> S2[Generate system-info.h]:::nodeStep
-                S2 --> S3[Set Include Paths src/gen]:::nodeStep
-                S3 --> S4[Mount PCH Header]:::nodeStep
-                S4 --> S5[Set SOVERSION]:::nodeStep
-                S5 --> S6[Link arc_base_settings]:::nodeStep
+                S1[校验命名空间]:::nodeStep --> S2[生成 system-info.h]:::nodeStep
+                S2 --> S3[设置 Include 路径 src/gen]:::nodeStep
+                S3 --> S4[挂载 PCH 预编译头]:::nodeStep
+                S4 --> S5[设置 SOVERSION]:::nodeStep
+                S5 --> S6[链接 arc_base_settings]:::nodeStep
             end
 
             subgraph Func_GenHeader [arc_generate_system_info_header]
                 direction TB
-                H1[Generate Generic system-info-gen.h]:::nodeStep --> H2[Create Interface Lib project_version_info]:::nodeStep
+                H1[生成通用 system-info-gen.h]:::nodeStep --> H2[创建接口库 project_version_info]:::nodeStep
             end
         end
         class Cluster_Setup setupGroup
 
         %% ==========================================
-        %% 3. Installation & Deployment Cluster
+        %% 3. 安装部署簇
         %% ==========================================
-        subgraph Cluster_Install [3. Installation & Deployment]
+        subgraph Cluster_Install [3.安装部署类]
             direction TB
 
             subgraph Func_InstLib [arc_install_library]
                 direction TB
-                L1[Install Headers include/]:::nodeStep --> L2[Install Binaries lib/ bin/]:::nodeStep
-                L2 --> L3[Generate ConfigVersion.cmake]:::nodeStep
-                L3 --> L4[Generate Config.cmake]:::nodeStep
-                L4 --> L5[Export Targets.cmake]:::nodeStep
+                L1[安装头文件 include/]:::nodeStep --> L2[安装二进制 lib/ bin/]:::nodeStep
+                L2 --> L3[生成 ConfigVersion.cmake]:::nodeStep
+                L3 --> L4[生成 Config.cmake]:::nodeStep
+                L4 --> L5[导出 Targets.cmake]:::nodeStep
             end
 
             subgraph Func_InstExe [arc_install_executable]
                 direction TB
-                E1[Install Target to bin/]:::nodeStep
+                E1[安装 Target 到 bin/]:::nodeStep
             end
         end
         class Cluster_Install installGroup
 
         %% ==========================================
-        %% 4. Quality Assurance Cluster
+        %% 4. 质量保证簇
         %% ==========================================
-        subgraph Cluster_Test [4. Test Integration]
+        subgraph Cluster_Test [4.测试集成类]
             direction TB
 
             subgraph Func_AddTest [arc_add_test]
                 direction TB
-                T1[Define Executable Name test_Target]:::nodeStep
-                T1 --> T2[Link GTest::gtest_main]:::nodeStep
-                T2 --> T3[Link Target Library ArcForge::Target]:::nodeStep
-                T3 --> T4[Inject Private Header Path /src]:::nodeStep
-                T4 --> T5[Register gtest_discover_tests]:::nodeStep
+                T1[定义 exe 名称 test_Target]:::nodeStep
+                T1 --> T2[链接 GTest::gtest_main]:::nodeStep
+                T2 --> T3[链接 被测库 ArcForge::Target]:::nodeStep
+                T3 --> T4[注入私有头文件路径 /src]:::nodeStep
+                T4 --> T5[注册 gtest_discover_tests]:::nodeStep
             end
         end
         class Cluster_Test testGroup
-
-        %% ==========================================
-        %% Layout Enforcement (Restored Phantom Links)
-        %% ==========================================
-        %% These links connect the clusters to ensure LR layout
-        G5 --> S1
-        S6 --> L1
-        L5 --> T1
 
     end
     class ArcFunctions_File fileContainer
