@@ -238,7 +238,8 @@ graph LR
     classDef nodeStep fill:#455a64,stroke:#cfd8dc,stroke-width:1px,color:#fff;
 
     %% Phantom links to enforce order 1 -> 2 -> 3 -> 4
-    linkStyle 22,23,24 stroke-width:0px,fill:none;
+    %% Fixed: Indices updated to 23, 24, 25 based on actual link count
+    linkStyle 23,24,25 stroke-width:0px,fill:none;
 
     subgraph ArcFunctions_File [ArcFunctions.cmake Toolbox]
         direction TB
@@ -332,6 +333,14 @@ graph LR
             end
         end
         class Cluster_Test testGroup
+
+        %% ==========================================
+        %% Layout Enforcement (Restored Phantom Links)
+        %% ==========================================
+        %% These links connect the clusters to ensure LR layout
+        G5 --> S1
+        S6 --> L1
+        L5 --> T1
 
     end
     class ArcFunctions_File fileContainer
