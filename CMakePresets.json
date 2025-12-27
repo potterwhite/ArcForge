@@ -7,16 +7,43 @@
   },
   "configurePresets": [
     {
-      "name": "mixin-deps-sherpa-linux-aarch64",
+      "name": "mixin-deps-librknnrt-2.2.0-linux-aarch64",
       "hidden": true,
-      "description": "External dependencies URLs and Hashes for RV1126BP by DIY",
+      "description": "External dependencies URLs and Hashes for librknnrt 2.2.0 aarch64 From Rockchip's Github",
+      "cacheVariables": {
+        "LIBRKNNRT_URL": "https://github.com/potterwhite/Artifacts_Public/releases/download/librknnrt-official/librknnrt-v2.2.0-linux-aarch64-shared-official.tar.xz",
+        "LIBRKNNRT_HASH": "SHA256=d933df1daeb112d6c1fe63d38c84081f75d8e39f6970ea5aef31b579187aed7e"
+      }
+    },
+    {
+      "name": "mixin-deps-librknnrt-2.3.2-linux-aarch64",
+      "hidden": true,
+      "description": "External dependencies URLs and Hashes for librknnrt 2.3.2 aarch64 From Rockchip's Github",
+      "cacheVariables": {
+        "LIBRKNNRT_URL": "https://github.com/potterwhite/Artifacts_Public/releases/download/librknnrt-official/librknnrt-v2.3.2-linux-aarch64-shared-official.tar.xz",
+        "LIBRKNNRT_HASH": "SHA256=a8830915b8bdeeaacdb6d2cc3a3a9e698b9c749acb3fe95d96b7bb208decb2b2"
+      }
+    },
+    {
+      "name": "mixin-deps-sherpa-linux-aarch64-gcc11_3_0",
+      "hidden": true,
+      "description": "External dependencies URLs and Hashes for aarch64 gcc 11.3.0 From Potterwhite's Github",
+      "cacheVariables": {
+        "SHERPA_ONNX_URL": "https://github.com/potterwhite/Artifacts_Public/releases/download/prebuilt-sherpa-onnx-v1.12.20-arcforge/sherpa-onnx-v1.12.20-linux-aarch64-gcc11_3_0-shared-arcforge.tar.xz",
+        "SHERPA_ONNX_HASH": "SHA256=3658b4904df03d3d7a9b1aef8e1753654f62631cd9e141d0f2b07588667556b9"
+      }
+    },
+    {
+      "name": "mixin-deps-sherpa-linux-aarch64-gcc13_3_0",
+      "hidden": true,
+      "description": "External dependencies URLs and Hashes for aarch64 gcc 13.3.0 From Potterwhite's Github",
       "cacheVariables": {
         "SHERPA_ONNX_URL": "https://github.com/potterwhite/Artifacts_Public/releases/download/sherpa-onnx-v1.12.20-linux-aarch64-shared-arcforge/sherpa-onnx-v1.12.20-linux-aarch64-shared-arcforge.tar.xz",
         "SHERPA_ONNX_HASH": "SHA256=09a83547a86c88e8b918172f597ac8ffd83283290905804f23bb6039fa05de6d"
       }
     },
     {
-      "name": "mixin-deps-sherpa-linux-x86_64",
+      "name": "mixin-deps-sherpa-linux-x86_64-gcc11_4_0",
       "hidden": true,
       "description": "External dependencies URLs and Hashes for x86_64 From Official Github",
       "cacheVariables": {
@@ -65,6 +92,13 @@
       "description": "Native Host Build"
     },
     {
+      "name": "plat-rk3588s",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/rk3588s.cmake"
+      }
+    },
+    {
       "name": "plat-rv1126bp",
       "hidden": true,
       "cacheVariables": {
@@ -80,7 +114,7 @@
     },
     {
       "name": "native-release",
-      "inherits": ["base", "plat-native", "cfg-release", "cfg-shared", "mixin-deps-sherpa-linux-x86_64"],
+      "inherits": ["base", "plat-native", "cfg-release", "cfg-shared", "mixin-deps-sherpa-linux-x86_64-gcc11_4_0"],
       "installDir": "${sourceDir}/install/native/release",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/native/release"
@@ -88,7 +122,7 @@
     },
     {
       "name": "native-debug",
-      "inherits": ["base", "plat-native", "cfg-debug", "cfg-shared", "mixin-deps-sherpa-linux-x86_64"],
+      "inherits": ["base", "plat-native", "cfg-debug", "cfg-shared", "mixin-deps-sherpa-linux-x86_64-gcc11_4_0"],
       "installDir": "${sourceDir}/install/native/debug",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/native/debug"
@@ -96,7 +130,7 @@
     },
     {
       "name": "native-release-static",
-      "inherits": ["base", "plat-native", "cfg-release", "cfg-static", "mixin-deps-sherpa-linux-x86_64"],
+      "inherits": ["base", "plat-native", "cfg-release", "cfg-static", "mixin-deps-sherpa-linux-x86_64-gcc11_4_0"],
       "installDir": "${sourceDir}/install/native/release-static",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/native/release-static"
@@ -104,7 +138,7 @@
     },
     {
       "name": "native-debug-static",
-      "inherits": ["base", "plat-native", "cfg-debug", "cfg-static", "mixin-deps-sherpa-linux-x86_64"],
+      "inherits": ["base", "plat-native", "cfg-debug", "cfg-static", "mixin-deps-sherpa-linux-x86_64-gcc11_4_0"],
       "installDir": "${sourceDir}/install/native/debug-static",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/native/debug-static"
@@ -112,7 +146,7 @@
     },
     {
       "name": "rv1126bp-release",
-      "inherits": ["base", "plat-rv1126bp", "cfg-release", "cfg-shared", "mixin-deps-sherpa-linux-aarch64"],
+      "inherits": ["base", "plat-rv1126bp", "cfg-release", "cfg-shared", "mixin-deps-sherpa-linux-aarch64-gcc13_3_0"],
       "installDir": "${sourceDir}/install/rv1126bp/release",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/rv1126bp/release"
@@ -120,7 +154,7 @@
     },
     {
       "name": "rv1126bp-debug",
-      "inherits": ["base", "plat-rv1126bp", "cfg-debug", "cfg-shared", "mixin-deps-sherpa-linux-aarch64"],
+      "inherits": ["base", "plat-rv1126bp", "cfg-debug", "cfg-shared", "mixin-deps-sherpa-linux-aarch64-gcc13_3_0"],
       "installDir": "${sourceDir}/install/rv1126bp/debug",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/rv1126bp/debug"
@@ -128,7 +162,7 @@
     },
     {
       "name": "rv1126bp-release-static",
-      "inherits": ["base", "plat-rv1126bp", "cfg-release", "cfg-static", "mixin-deps-sherpa-linux-aarch64"],
+      "inherits": ["base", "plat-rv1126bp", "cfg-release", "cfg-static", "mixin-deps-sherpa-linux-aarch64-gcc13_3_0"],
       "installDir": "${sourceDir}/install/rv1126bp/release-static",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/rv1126bp/release-static"
@@ -136,10 +170,42 @@
     },
     {
       "name": "rv1126bp-debug-static",
-      "inherits": ["base", "plat-rv1126bp", "cfg-debug", "cfg-static", "mixin-deps-sherpa-linux-aarch64"],
+      "inherits": ["base", "plat-rv1126bp", "cfg-debug", "cfg-static", "mixin-deps-sherpa-linux-aarch64-gcc13_3_0"],
       "installDir": "${sourceDir}/install/rv1126bp/debug-static",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/rv1126bp/debug-static"
+      }
+    },
+    {
+      "name": "rk3588s-release",
+      "inherits": ["base", "plat-rk3588s", "cfg-release", "cfg-shared", "mixin-deps-sherpa-linux-aarch64-gcc11_3_0","mixin-deps-librknnrt-2.2.0-linux-aarch64"],
+      "installDir": "${sourceDir}/install/rk3588s/release",
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "${sourceDir}/install/rk3588s/release"
+      }
+    },
+    {
+      "name": "rk3588s-debug",
+      "inherits": ["base", "plat-rk3588s", "cfg-debug", "cfg-shared", "mixin-deps-sherpa-linux-aarch64-gcc11_3_0", "mixin-deps-librknnrt-2.2.0-linux-aarch64"],
+      "installDir": "${sourceDir}/install/rk3588s/debug",
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "${sourceDir}/install/rk3588s/debug"
+      }
+    },
+    {
+      "name": "rk3588s-release-static",
+      "inherits": ["base", "plat-rk3588s", "cfg-release", "cfg-static", "mixin-deps-sherpa-linux-aarch64-gcc11_3_0", "mixin-deps-librknnrt-2.2.0-linux-aarch64"],
+      "installDir": "${sourceDir}/install/rk3588s/release-static",
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "${sourceDir}/install/rk3588s/release-static"
+      }
+    },
+    {
+      "name": "rk3588s-debug-static",
+      "inherits": ["base", "plat-rk3588s", "cfg-debug", "cfg-static", "mixin-deps-sherpa-linux-aarch64-gcc11_3_0", "mixin-deps-librknnrt-2.2.0-linux-aarch64"],
+      "installDir": "${sourceDir}/install/rk3588s/debug-static",
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "${sourceDir}/install/rk3588s/debug-static"
       }
     }
   ]

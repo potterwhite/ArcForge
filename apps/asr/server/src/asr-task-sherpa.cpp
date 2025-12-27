@@ -27,16 +27,16 @@
 // 你使用的是rknn模型，需要确保provider正确设置为"rknn"
 // 我这里先用通用zipformer示例路径，请务必替换成你RK3588的rknn模型路径！
 const std::string ENCODER_PATH =
-    "/home/asr/models/rknn/sherpa-zipformer/fp16/"
+    "/home/asr/models/sherpa-onnx-rk3588-streaming-zipformer-bilingual-zh-en-2023-02-20/"
     "encoder.rknn";
 const std::string DECODER_PATH =
-    "/home/asr/models/rknn/sherpa-zipformer/fp16/"
+    "/home/asr/models/sherpa-onnx-rk3588-streaming-zipformer-bilingual-zh-en-2023-02-20/"
     "decoder.rknn";
 const std::string JOINER_PATH =
-    "/home/asr/models/rknn/sherpa-zipformer/fp16/"
+    "/home/asr/models/sherpa-onnx-rk3588-streaming-zipformer-bilingual-zh-en-2023-02-20/"
     "joiner.rknn";
 const std::string TOKENS_PATH =
-    "/home/asr/models/rknn/sherpa-zipformer/fp16/"
+    "/home/asr/models/sherpa-onnx-rk3588-streaming-zipformer-bilingual-zh-en-2023-02-20/"
     "tokens.txt";
 
 const std::string PROVIDER = "rknn";  // **** 修改为 "rknn" 如果你在RK3588上运行 ****

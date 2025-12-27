@@ -19,7 +19,6 @@
 # SOFTWARE.
 
 # third_party/sherpa-onnx/CMakeLists.txt
-cmake_minimum_required(VERSION 3.14)
 project(sherpa-onnx-download NONE)          # NONE means current project does not need to be compiled
 
 # ---------------------------------
@@ -79,7 +78,43 @@ message(STATUS "[Configuration][ThirdParty] Sherpa-Onnx mounted at: ${SHERPA_ROO
 # IV. Define "IMPORTED Targets" (Point to the Dir After Decompressing)
 # ---------------------------------
 
-# --- a. Core Lib: C++ API ---
+# --- a. Dep Lib: OnnxRuntime ---
+add_library(SherpaDeps::OnnxRuntime
+    SHARED
+    IMPORTED
+    GLOBAL
+)
+set_target_properties(SherpaDeps::OnnxRuntime
+    PROPERTIES
+        IMPORTED_LOCATION
+            "${SHERPA_ROOT}/lib/libonnxruntime.so"
+)
+
+# --- b. Dep Lib: C API ---
+add_library(SherpaDeps::C_API
+    SHARED
+    IMPORTED
+    GLOBAL
+)
+set_target_properties(SherpaDeps::C_API
+    PROPERTIES
+        IMPORTED_LOCATION
+            "${SHERPA_ROOT}/lib/libsherpa-onnx-c-api.so"
+)
+
+# --- c. Dep Lib: CArgs ---
+add_library(SherpaDeps::CArgs
+    SHARED
+    IMPORTED
+    GLOBAL
+)
+set_target_properties(SherpaDeps::CArgs
+    PROPERTIES
+        IMPORTED_LOCATION
+            "${SHERPA_ROOT}/lib/libcargs.so"
+)
+
+# --- d. Core Lib: C++ API ---
 add_library(sherpa_onnx_lib
     SHARED
     IMPORTED
@@ -91,55 +126,11 @@ set_target_properties(sherpa_onnx_lib
             "${SHERPA_ROOT}/lib/libsherpa-onnx-cxx-api.so"
         INTERFACE_INCLUDE_DIRECTORIES
             "${SHERPA_ROOT}/include"
-        # 3. 自动链接依赖
         INTERFACE_LINK_LIBRARIES
-            "SherpaDeps::C_API;SherpaDeps::OnnxRuntime;SherpaDeps::CArgs"
+            "${PROJECT_NAMESPACE}::ThirdParty::LibRKNNRT;SherpaDeps::C_API;SherpaDeps::OnnxRuntime;SherpaDeps::CArgs"
 )
 
-# --- b. Dep Lib: OnnxRuntime ---
-add_library(onnxruntime_lib
-    SHARED
-    IMPORTED
-    GLOBAL
-)
-set_target_properties(onnxruntime_lib
-    PROPERTIES
-        IMPORTED_LOCATION
-            "${SHERPA_ROOT}/lib/libonnxruntime.so"
-)
-
-# --- c. Dep Lib: C API ---
-add_library(sherpa_c_api_lib
-    SHARED
-    IMPORTED
-    GLOBAL
-)
-set_target_properties(sherpa_c_api_lib
-    PROPERTIES
-        IMPORTED_LOCATION
-            "${SHERPA_ROOT}/lib/libsherpa-onnx-c-api.so"
-)
-
-# --- d. Dep Lib: CArgs ---
-add_library(cargs_lib
-    SHARED
-    IMPORTED
-    GLOBAL
-)
-set_target_properties(cargs_lib
-    PROPERTIES
-        IMPORTED_LOCATION
-            "${SHERPA_ROOT}/lib/libcargs.so"
-)
-
-# --- e. Setup Dependent Chain ---
-set_target_properties(sherpa_onnx_lib
-    PROPERTIES
-        INTERFACE_LINK_LIBRARIES
-            "sherpa_c_api_lib;onnxruntime_lib;cargs_lib"
-)
-
-# --- f. Create Alias (External Interface) ---
+# --- e. Create Alias (External Interface) ---
 add_library(${PROJECT_NAMESPACE}::ThirdParty::SherpaOnnx
     ALIAS
         sherpa_onnx_lib
