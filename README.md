@@ -136,7 +136,7 @@ Currently, only RV1126BP and RK3588S platforms are supported. To support a new p
 
 Please read this tutorial carefully:
 
-> **🔍 Deep Dive**: [**How to Add Support for a New SoC in ArcForge**](./ADD_NEW_SOC_ZH_CN.md)
+> **🔍 Deep Dive**: [**How to Add Support for a New SoC in ArcForge(ADD_NEW_SOC.md)**](./docs/en/ADD_NEW_SOC.md)
 > *(Click the link above to view detailed steps guiding you through supporting a new SoC)*
 
 #### 2. Submit an issue to me

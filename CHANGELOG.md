@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v0.5.2 (2025-12-30)
 
+### 🐛 Fixes
+- **Docs**: Corrected broken relative hyperlinks in `README.md` and `docs/zh-cn/README_ZH_CN.md` that were pointing to incorrect file paths after the directory restructuring.
+
+## v0.5.2 (2025-12-30)
+
 ### 📚 Documentation
 - **Structure**: Major refactor of the `docs/` folder. Content is now split into `en/` and `zh-cn/` subdirectories to support better internationalization.
 - **New Guide**: Added **"How to Add Support for a New SoC"** (`ADD_NEW_SOC.md`). This guide details the 5-step process for porting ArcForge to new embedded platforms (e.g., RK3588), covering toolchains, `.env` configuration, and dependency management.
