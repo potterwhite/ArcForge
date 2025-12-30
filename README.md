@@ -1,128 +1,142 @@
 <div align="center">
-  <h1>ArcForge ASR SDK</h1>
-  <p><i>High-Performance C++ Automatic Speech Recognition Inference Software</i></p>
+  <h1>ArcForge Automatic Speech Recognition (ASR) SDK</h1>
+  <p><i>High-Performance Embedded ASR Inference Framework based on Modern CMake</i></p>
 </div>
 
 <p align="center">
-  <!-- Place your generated Banner image here -->
   <img src="https://github.com/potterwhite/ArcForge/blob/8afe0dc3f26d82b3643dba5d9dc1fd3070b95b2d/docs/asset/banner-light.jpeg" alt="Project Banner" width="100%"/>
 </p>
 
 <p align="center">
   <a href="#"><img src="https://img.shields.io/badge/standard-C++17-blue" alt="C++ Standard"></a>
   <a href="#"><img src="https://img.shields.io/badge/platform-Linux%20%7C%20Embedded-orange" alt="Platform"></a>
-  <a href="#"><img src="https://img.shields.io/badge/design-Convention%20over%20Configuration-success" alt="Design Philosophy"></a>
-  <a href="#"><img src="https://img.shields.io/badge/build-Automated%20CMake-blueviolet" alt="Build System"></a>
+  <a href="#"><img src="https://img.shields.io/badge/build-CMake%20Presets-blueviolet" alt="Build System"></a>
 </p>
 
 <p align="center">
-  <strong>English</strong> | <a href="./docs/README_ZH_CN.md">简体中文</a>
-</p>
-
-<p align="center">
-  <a href="#-quick-start">🚀 Quick Start</a> •
-  <a href="#-command-cheatsheet">⌨️ Command Cheatsheet</a> •
-  <a href="#-output-structure">📂 Output Structure</a>
+  <strong>English</strong> | <a href="docs/zh-cn/README_ZH_CN.md">简体中文</a>
 </p>
 
 ---
 
-> ### ⚠️ Cross-Compilation Notice
-> **Env Configuration is Critical.** This project relies heavily on the `.env` file to locate the cross-compilation toolchain. If you encounter `gcc not found` or similar errors, please check if your `.env` configuration is loaded correctly.
+### 📖 Introduction
 
-### ✨ Core Features
+ArcForge is a C++ ASR inference framework designed specifically for **edge computing**.
+It integrates the `sherpa-zipformer` model, implementing a complete pipeline from low-level NPU binding to high-level Client/Server calls. The standout feature of this project is **"Architectural Transparency"** — we fully disclose and deconstruct the complete industrial-grade Modern CMake build logic.
 
--   **⚡ High-Performance Inference**: Currently uses the `sherpa-zipformer` model for ASR inference (tested and verified); designed as an integrated ASR inference engine for edge computing.
--   **🛠️ Modern CMake Architecture**: Adopts namespace isolation (`Namespace::Lib`, e.g., `Arcforge::Utils`). Automatically renames artifacts during the build process (e.g., `libarcforge_utils.so`) to ensure symbol safety.
--   **📦 Dependency Isolation**: Decouples the local environment from the source code via `.env`. Supports offline caching and automatic downloading of third-party dependencies (e.g., sherpa-onnx).
--   **🔌 Client/Server Ready**: Built-in complete C/S architecture examples. The Server includes NPU binding logic, while the Client provides standard calling interfaces.
+### 🏗️ Architecture
+
+We provide not just the source code, but also a **fully visualized** build system.
+
+> **🔍 Deep Dive**: [**ArcForge Build System Explained (BUILD_SYSTEM.md)**](docs/en/BUILD_SYSTEM.md)
+> *(Click the link above to view the Build Lifecycle, Core DSL Logic, and Detailed Dependency Topology)*
+
+**Core Module Overview:**
+
+```mermaid
+graph LR
+    %% ==========================================
+    %% High Contrast Styles
+    %% Strategy: Dark background + White text + Bright borders
+    %% ==========================================
+    classDef appNode fill:#0d47a1,stroke:#90caf9,stroke-width:2px,color:#fff;
+    classDef libNode fill:#e65100,stroke:#ffcc80,stroke-width:2px,color:#fff;
+    classDef thirdNode fill:#333333,stroke:#ffffff,stroke-width:2px,color:#fff,stroke-dasharray: 5 5;
+
+    subgraph Apps [Application Layer]
+        direction TB
+        Client(ASR Client):::appNode
+        Server(ASR Server):::appNode
+    end
+
+    subgraph Libs [Core Library Layer]
+        direction LR
+        Engine[ASREngine]:::libNode --> Net[Network]:::libNode
+        Net --> Utils[Utils]:::libNode
+    end
+
+    subgraph 3rd [Dependency Layer]
+        direction LR
+        Engine -.-> Sherpa[SherpaOnnx]:::thirdNode
+        Sherpa -.-> RKNN[RKNNRT]:::thirdNode
+    end
+
+    Client --> Engine
+    Server --> Engine
+```
 
 ---
 
 ### 🚀 Quick Start
 
-This project uses Modern CMake for build management and isolates local environment differences via the `.env` file.
+This project relies heavily on `.env` for environment isolation. Please strictly follow the steps below:
 
-#### Step 1: Configuration
-
-Before compiling, you must create a local configuration file. This file is git-ignored and used to adapt to different developers' local paths.
+#### 1. Environment Configuration (Required)
 
 ```bash
-# 1. Copy config file from template
+# 1. Copy the configuration template
 cp .env.example .env
 
-# 2. Edit .env file, fill in local SDK and cache paths
+# 2. Edit the configuration file
+#    ARC_RV1126BP_SDK_ROOT: Path to your cross-compilation toolchain root (Required)
+#    ARC_DEP_CACHE_DIR:     Path to third-party library cache (Recommended for faster builds)
 vim .env
 ```
 
-**Key Configuration Items:**
+#### 2. Build
 
-*   `ARC_RV1126BP_SDK_ROOT`: **(Required)** The absolute path to the cross-compilation toolchain (Buildroot SDK) on the host machine.
-*   `ARC_DEP_CACHE_DIR`: **(Optional)** Local cache directory for third-party dependencies (e.g., `sherpa-onnx`).
-    *   If this path is configured and the corresponding tarball exists, the build system will prefer the local file (offline mode).
-    *   If not configured or the file is missing, it will automatically download from GitHub Releases.
+Use the `build.sh` script to drive CMake Presets:
 
-#### Step 2: Build
-
-The project provides a unified build script `build.sh`, which encapsulates the CMake Presets logic.
-
-**Basic Syntax:**
 ```bash
-./build.sh <Action> [Platform] [BuildType]
+# [Recommended] Clean Build (RV1126 Release)
+./build.sh cb rv1126bp
+
+# [Dev] Incremental Build (Compile only modified parts)
+./build.sh build rv1126bp
+
+# [Debug] Native Verification (x86 Debug)
+./build.sh cb native debug
 ```
-
-**Common Workflow Examples:**
-
-1.  **Clean Build**: Suitable for first-time builds or after environment changes.
-    ```bash
-    ./build.sh cb rv1126bp
-    ```
-2.  **Incremental Build**: For debugging after code modifications.
-    ```bash
-    ./build.sh build rv1126bp
-    ```
-3.  **Native Test**: Verify business logic on an x86 host.
-    ```bash
-    ./build.sh cb native
-    ```
 
 ---
 
 ### ⌨️ Command Cheatsheet
 
-| Action | Command | Description |
+| Scenario | Command | Description |
 | :--- | :--- | :--- |
-| **Release Build** | | |
-| Clean Build (RV1126) | `./build.sh cb rv1126bp` | Clean and compile Release version, includes SDK linking |
-| Incremental Build | `./build.sh build rv1126bp` | Compile only modified files; fastest speed |
-| **Debug Build** | | |
-| Debug Mode (RV1126) | `./build.sh cb rv1126bp debug` | Enable debug symbols, unoptimized version |
-| Native Debug (x86) | `./build.sh cb native debug` | Compile using host GCC/Clang, used for logic verification |
-| **Maintenance** | | |
-| Clean All | `./build.sh cleanall` | Delete all build directories and install artifacts |
+| **Production** | `./build.sh cb rv1126bp` | Clean & Build Release version (-O3) |
+| **Debugging** | `./build.sh cb rv1126bp debug` | Build Debug version (with symbols, -Og) |
+| **Cleanup** | `./build.sh cleanall` | Remove `build/` and `install/` directories |
+| **Git Clean** | `git clean -fdx -e .env` | **Caution**: Remove all untracked files (keeps config) |
 
 ---
 
-### 📂 Output Structure
+### 📂 Output Directory
 
-Upon build completion, all artifacts will be installed to the `install/` directory, following the renaming rules (`libarcforge_*.so`):
+After building, artifacts are located in the `install/` directory. We automatically handle renaming and RPATH settings, so they are ready for deployment:
 
 ```text
-install/
-└── rv1126bp/
-    └── debug/
-        ├── bin/
-        │   ├── ArcForge_ASR_Client   # Client Application
-        │   └── ArcForge_ASR_Server   # Server Application (with NPU binding)
-        ├── lib/
-        │   ├── libarcforge_core.so   # Core Business Lib (was Arcforge::Core)
-        │   ├── libarcforge_utils.so  # Utils Lib (was Arcforge::Utils)
-        │   └── libsherpa-onnx*.so    # 3rd-party Dependency Lib
-        └── include/                  # SDK Headers
+install/rv1126bp/release/
+├── bin/
+│   ├── ArcForge_ASR_Client      # Client test application
+│   └── ArcForge_ASR_Server      # Server main application
+└── lib/
+    ├── libarcforge_asrengine.so # Core engine library
+    ├── libarcforge_network.so   # Network library
+    ├── libarcforge_utils.so     # Basic utilities library
+    └── libsherpa-onnx*.so       # Dependency library
 ```
 
-### ⚠️ Limitations & Roadmap
 
--   **Network & Caching**:
-    -   The build system defaults to attempting to pull third-party dependencies (e.g., `sherpa-onnx`) from GitHub.
-    -   Given potential network instability, it is **recommended** to configure `ARC_DEP_CACHE_DIR` in `.env` and pre-populate it with dependency packages to ensure build stability ("Offline-First" mode). Please refer to `CMakePresets.json` for exact package URLs.
+### 🧩 Supporting New Platforms
+
+Currently, only RV1126BP and RK3588S platforms are supported. To support a new platform, there are two suggested methods:
+
+#### 1. Add it yourself
+
+Please read this tutorial carefully:
+
+> **🔍 Deep Dive**: [**How to Add Support for a New SoC in ArcForge**](./ADD_NEW_SOC_ZH_CN.md)
+> *(Click the link above to view detailed steps guiding you through supporting a new SoC)*
+
+#### 2. Submit an issue to me

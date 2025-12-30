@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## v0.5.2 (2025-12-30)
+
+### 📚 Documentation
+- **Structure**: Major refactor of the `docs/` folder. Content is now split into `en/` and `zh-cn/` subdirectories to support better internationalization.
+- **New Guide**: Added **"How to Add Support for a New SoC"** (`ADD_NEW_SOC.md`). This guide details the 5-step process for porting ArcForge to new embedded platforms (e.g., RK3588), covering toolchains, `.env` configuration, and dependency management.
+- **Deep Dive**: Added **"ArcForge Build System Explained"** (`BUILD_SYSTEM.md`), featuring Mermaid diagrams to visualize the Modern CMake architecture, dependency topology, and DSL logic.
+- **README**: Updated the main README with high-contrast architecture diagrams, improved Quick Start instructions, and correct links to the new documentation paths.
+
+### 🧹 Refactor
+- Removed legacy documentation files in the root `docs/` folder in favor of the new localized structure.
+
+
 ## [v0.5.1] - 2025-12-27
 
 ### 🧹 Refactor & Style (重构与规范)
