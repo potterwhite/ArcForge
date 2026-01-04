@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0](https://github.com/potterwhite/ArcForge/compare/v0.5.3...v0.6.0) (2026-01-04)
+
+
+### ✨ Added
+
+* trigger first automated release ([#7](https://github.com/potterwhite/ArcForge/issues/7)) ([3feb1ae](https://github.com/potterwhite/ArcForge/commit/3feb1ae55cb1a16470b96714c5482398a4cfb3a0))
+
 ## v0.5.2 (2025-12-30)
 
 ### 🐛 Fixes
@@ -138,4 +145,3 @@ This release represents the consolidation of the entire ArcForge development his
 [0.5.0]: https://github.com/potterwhite/ArcForge/tags/v0.5.0
 
 [0.5.1]: https://github.com/potterwhite/ArcForge/tags/v0.5.1
-
