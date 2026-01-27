@@ -25,6 +25,24 @@
       }
     },
     {
+      "name": "mixin-deps-sherpa-linux-aarch64-gcc11_3_0-v2.3.2",
+      "hidden": true,
+      "description": "External dependencies URLs and Hashes for aarch64 gcc 11.3.0 v2.3.2 From Potterwhite's Github",
+      "cacheVariables": {
+        "SHERPA_ONNX_URL": "https://github.com/potterwhite/Artifacts_Public/releases/download/prebuilt-sherpa-onnx-v1.12.20-arcforge/sherpa-onnx-v1.12.20-linux-aarch64-gcc11_3_0-shared-arcforge-v2.3.2.tar.xz",
+        "SHERPA_ONNX_HASH": "SHA256=e311a8a469fe4b324d5bbdefa6f04f66dbccb5a6c2a8fc53a8627a35546f4450"
+      }
+    },
+    {
+      "name": "mixin-deps-sherpa-linux-aarch64-gcc11_3_0-v2.3.2-FixSherpa",
+      "hidden": true,
+      "description": "External dependencies URLs and Hashes for aarch64 gcc 11.3.0 v2.3.2 FixSherpa From Potterwhite's Github",
+      "cacheVariables": {
+        "SHERPA_ONNX_URL": "https://github.com/potterwhite/Artifacts_Public/releases/download/prebuilt-sherpa-onnx-v1.12.20-arcforge/sherpa-onnx-v1.12.20-linux-aarch64-gcc11_3_0-shared-arcforge-v2.3.2-FixSherpa.tar.xz",
+        "SHERPA_ONNX_HASH": "SHA256=345dc6d922f165c2c5e49f42659e860f1506fbf90d27c5a775198c911fbea395"
+      }
+    },
+    {
       "name": "mixin-deps-sherpa-linux-aarch64-gcc11_3_0",
       "hidden": true,
       "description": "External dependencies URLs and Hashes for aarch64 gcc 11.3.0 From Potterwhite's Github",
@@ -178,7 +196,7 @@
     },
     {
       "name": "rk3588s-release",
-      "inherits": ["base", "plat-rk3588s", "cfg-release", "cfg-shared", "mixin-deps-sherpa-linux-aarch64-gcc11_3_0","mixin-deps-librknnrt-2.3.2-linux-aarch64"],
+      "inherits": ["base", "plat-rk3588s", "cfg-release", "cfg-shared", "mixin-deps-sherpa-linux-aarch64-gcc11_3_0","mixin-deps-sherpa-linux-aarch64-gcc11_3_0-v2.3.2"],
       "installDir": "${sourceDir}/install/rk3588s/release",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/rk3588s/release"
@@ -186,7 +204,7 @@
     },
     {
       "name": "rk3588s-debug",
-      "inherits": ["base", "plat-rk3588s", "cfg-debug", "cfg-shared", "mixin-deps-sherpa-linux-aarch64-gcc11_3_0", "mixin-deps-librknnrt-2.3.2-linux-aarch64"],
+      "inherits": ["base", "plat-rk3588s", "cfg-debug", "cfg-shared", "mixin-deps-sherpa-linux-aarch64-gcc11_3_0", "mixin-deps-sherpa-linux-aarch64-gcc11_3_0-v2.3.2"],
       "installDir": "${sourceDir}/install/rk3588s/debug",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/rk3588s/debug"
@@ -194,7 +212,7 @@
     },
     {
       "name": "rk3588s-release-static",
-      "inherits": ["base", "plat-rk3588s", "cfg-release", "cfg-static", "mixin-deps-sherpa-linux-aarch64-gcc11_3_0", "mixin-deps-librknnrt-2.3.2-linux-aarch64"],
+      "inherits": ["base", "plat-rk3588s", "cfg-release", "cfg-static", "mixin-deps-sherpa-linux-aarch64-gcc11_3_0", "mixin-deps-sherpa-linux-aarch64-gcc11_3_0-v2.3.2"],
       "installDir": "${sourceDir}/install/rk3588s/release-static",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/rk3588s/release-static"
@@ -202,7 +220,7 @@
     },
     {
       "name": "rk3588s-debug-static",
-      "inherits": ["base", "plat-rk3588s", "cfg-debug", "cfg-static", "mixin-deps-sherpa-linux-aarch64-gcc11_3_0", "mixin-deps-librknnrt-2.3.2-linux-aarch64"],
+      "inherits": ["base", "plat-rk3588s", "cfg-debug", "cfg-static", "mixin-deps-sherpa-linux-aarch64-gcc11_3_0", "mixin-deps-sherpa-linux-aarch64-gcc11_3_0-v2.3.2"],
       "installDir": "${sourceDir}/install/rk3588s/debug-static",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "${sourceDir}/install/rk3588s/debug-static"
