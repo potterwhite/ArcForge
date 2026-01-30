@@ -179,10 +179,7 @@ void ASRTaskSherpa::run() {
 		asr_engine_.ProcessAudioChunk(audio_chunk);
 		std::string recognized_text = asr_engine_.GetCurrentText();
 
-		// --- Step 4: Check for endpoint detection ---
-		bool is_endpoint = asr_engine_.IsEndpoint();
-
-		// --- Step 5: Safely send result ---
+		// --- Step 4: Safely send result ---
 		// Similarly, lock before accessing client_
 		{
 			std::lock_guard<std::mutex> lock(client_mutex_);
@@ -203,13 +200,8 @@ void ASRTaskSherpa::run() {
 			break;
 		}
 
-		// --- Step 6: Reset ASR stream only when endpoint is detected (no locking needed) ---
-		// According to sherpa-onnx best practices, Reset should only be called when
-		// an endpoint is detected. Resetting after every chunk breaks the streaming
-		// recognition because the model needs to accumulate context across chunks.
-		if (is_endpoint) {
-			asr_engine_.ResetStream();
-		}
+		// --- Step 5: Reset ASR stream (no locking needed) ---
+		asr_engine_.ResetStream();
 	}
 
 	// universal cleanup after loop exit
