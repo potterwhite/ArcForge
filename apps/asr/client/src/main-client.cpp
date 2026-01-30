@@ -38,7 +38,7 @@ const std::string_view kcurrent_app_name = "test-client";
 
 const std::string ksocket_path = "/tmp/soCket.paTh";
 const int ksample_rate = 16000;
-const int CHUNK_DURATION_MS = 800;  // milliseconds
+const int CHUNK_DURATION_MS = 1000;  // milliseconds
 
 // --- kill signal capture ---
 // static bool g_stop_signal_received = false;
